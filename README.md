@@ -14,7 +14,7 @@ A comprehensive Point of Sale (POS) system with inventory management, built with
 - Shopping cart with quantity management
 - Multiple payment options (Cash, GCash, Installment)
 - E-receipt generation
-- Manual price discounts asdasdasada
+- Manual price discounts 
 
 ### Inventory Management
 - Shipment tracking (incoming deliveries)
