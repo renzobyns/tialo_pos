@@ -23,13 +23,13 @@ if (!isset($_SESSION['user_id'])) {
             
             <nav class="navbar-menu">
                 <?php if ($_SESSION['role'] === 'Admin'): ?>
-                    <a href="dashboard.php" class="nav-link">Dashboard</a>
-                    <a href="modules/inventory/index.php" class="nav-link">Inventory</a>
-                    <a href="modules/reports/index.php" class="nav-link">Reports</a>
-                    <a href="modules/users/index.php" class="nav-link">Users</a>
+                    <a href="/tialo_pos/dashboard.php" class="nav-link">Dashboard</a>
+                    <a href="/tialo_pos/modules/inventory/index.php" class="nav-link">Inventory</a>
+                    <a href="/tialo_pos/modules/reports/index.php" class="nav-link">Reports</a>
+                    <a href="/tialo_pos/modules/users/index.php" class="nav-link">Users</a>
                 <?php endif; ?>
                 
-                <a href="modules/pos/index.php" class="nav-link">POS</a>
+                <a href="/tialo_pos/modules/pos/index.php" class="nav-link">POS</a>
             </nav>
             
             <div class="navbar-right">
