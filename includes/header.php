@@ -34,7 +34,7 @@ if (!isset($_SESSION['user_id'])) {
             
             <div class="navbar-right">
                 <span class="user-info">Welcome, <?php echo htmlspecialchars($_SESSION['name']); ?></span>
-                <a href="modules/auth/logout.php" class="btn-logout">Logout</a>
+                <a href="/tialo_pos/modules/auth/logout.php" class="btn-logout">Logout</a>
             </div>
         </div>
     </header>
