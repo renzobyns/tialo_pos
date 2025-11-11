@@ -18,93 +18,238 @@ if (isset($_SESSION['login_error'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Tialo Japan Surplus POS</title>
-    <?php include '../../includes/tailwind-cdn.html'; ?>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      :root {
+        --color-primary: #BA181B;
+        --color-primary-hover: #A4161A;
+        --color-primary-active: #660708;
+        --color-surface: #FFFFFF;
+        --color-bg: #F5F3F4;
+        --color-text-strong: #161A1D;
+        --color-text-muted: #B1A7A6;
+        --color-border: #D3D3D3;
+        --color-accent: #E5383B;
+      }
+
+      html, body {
+        height: 100%;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      }
+
+      body {
+        background: linear-gradient(135deg, var(--color-bg) 0%, #EAE5E4 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+      }
+
+      .login-container {
+        width: 100%;
+        max-width: 380px;
+      }
+
+      .login-card {
+        background: var(--color-surface);
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+        border: 1px solid var(--color-border);
+      }
+
+      .login-brand {
+        background: linear-gradient(135deg, #0B090A 0%, #161A1D 100%);
+        color: white;
+        padding: 32px 24px;
+        text-align: center;
+      }
+
+      .login-brand-circle {
+        width: 60px;
+        height: 60px;
+        background: var(--color-primary);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 16px;
+        font-size: 28px;
+        font-weight: 700;
+      }
+
+      .login-brand h1 {
+        font-size: 22px;
+        font-weight: 600;
+        margin-bottom: 4px;
+      }
+
+      .login-brand p {
+        font-size: 13px;
+        opacity: 0.7;
+      }
+
+      .login-form-section {
+        padding: 28px 24px;
+      }
+
+      .login-error {
+        background-color: #FEE;
+        border: 1px solid #FCC;
+        color: var(--color-accent);
+        padding: 10px 12px;
+        border-radius: 8px;
+        font-size: 13px;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+      }
+
+      .login-error-icon {
+        width: 16px;
+        height: 16px;
+        flex-shrink: 0;
+        margin-top: 2px;
+      }
+
+      .form-group {
+        margin-bottom: 14px;
+      }
+
+      .form-group label {
+        display: block;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--color-text-strong);
+        margin-bottom: 5px;
+      }
+
+      .form-group input {
+        width: 100%;
+        padding: 9px 11px;
+        border: 1px solid var(--color-border);
+        border-radius: 8px;
+        font-size: 13px;
+        font-family: inherit;
+        transition: all 0.2s;
+      }
+
+      .form-group input:focus {
+        outline: none;
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 3px rgba(186, 24, 27, 0.1);
+      }
+
+      .form-group input::placeholder {
+        color: var(--color-text-muted);
+      }
+
+      .login-submit {
+        width: 100%;
+        padding: 9px 16px;
+        background-color: var(--color-primary);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        margin-top: 4px;
+      }
+
+      .login-submit:hover {
+        background-color: var(--color-primary-hover);
+      }
+
+      .login-submit:active {
+        background-color: var(--color-primary-active);
+        transform: scale(0.98);
+      }
+
+      .login-footer {
+        border-top: 1px solid var(--color-border);
+        padding: 16px 24px;
+        background-color: #F9F8F8;
+      }
+
+      .login-footer-label {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--color-text-strong);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+      }
+
+      .login-credentials {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .login-credentials-item {
+        font-size: 12px;
+        color: var(--color-text-strong);
+        padding: 6px 8px;
+        background: var(--color-surface);
+        border-radius: 6px;
+        border: 1px solid var(--color-border);
+        font-family: 'Monaco', 'Menlo', monospace;
+      }
+    </style>
 </head>
-<body class="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 min-h-screen flex items-center justify-center p-4">
-    <div class="w-full max-w-md">
-        <!-- Login Card -->
-        <div class="bg-white rounded-2xl shadow-2xl overflow-hidden">
-            <!-- Header Section -->
-            <div class="bg-gradient-to-r from-slate-900 to-slate-700 px-8 py-12 text-center">
-                <div class="flex justify-center mb-4">
-                    <i class="fas fa-store text-emerald-400 text-4xl"></i>
-                </div>
-                <h1 class="text-3xl font-bold text-white mb-2">Tialo Japan</h1>
-                <p class="text-slate-300 text-sm">Surplus POS System</p>
-            </div>
-            
-            <!-- Form Section -->
-            <div class="px-8 py-8">
-                <!-- Error Alert -->
-                <?php if ($error): ?>
-                    <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start space-x-3">
-                        <i class="fas fa-exclamation-circle text-red-600 mt-0.5"></i>
-                        <div>
-                            <p class="text-red-800 text-sm font-medium">Login Failed</p>
-                            <p class="text-red-700 text-xs"><?php echo htmlspecialchars($error); ?></p>
-                        </div>
-                    </div>
-                <?php endif; ?>
-                
-                <form method="POST" action="login_process.php" class="space-y-5">
-                    <!-- Email Field -->
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-2">
-                            <i class="fas fa-envelope mr-2 text-slate-500"></i>Email Address
-                        </label>
-                        <input 
-                            type="email" 
-                            name="email" 
-                            placeholder="admin@tialo.com" 
-                            required
-                            autofocus
-                            class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition"
-                        >
-                    </div>
-                    
-                    <!-- Password Field -->
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-2">
-                            <i class="fas fa-lock mr-2 text-slate-500"></i>Password
-                        </label>
-                        <input 
-                            type="password" 
-                            name="password" 
-                            placeholder="••••••••" 
-                            required
-                            class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition"
-                        >
-                    </div>
-                    
-                    <!-- Login Button -->
-                    <button 
-                        type="submit" 
-                        class="w-full mt-6 py-3 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 text-white font-semibold rounded-lg transition transform hover:scale-105 active:scale-95 flex items-center justify-center space-x-2"
-                    >
-                        <i class="fas fa-sign-in-alt"></i>
-                        <span>Sign In</span>
-                    </button>
-                </form>
-            </div>
-            
-            <!-- Footer Section -->
-            <div class="bg-slate-50 px-8 py-6 border-t border-slate-200">
-                <p class="text-xs text-slate-600 mb-3 font-semibold">Demo Credentials:</p>
-                <div class="space-y-2 bg-slate-100 rounded-lg p-3">
-                    <p class="text-xs text-slate-700">
-                        <span class="font-mono bg-white px-2 py-1 rounded text-emerald-700">admin@tialo.com</span>
-                    </p>
-                    <p class="text-xs text-slate-700">
-                        <span class="font-mono bg-white px-2 py-1 rounded text-emerald-700">admin123</span>
-                    </p>
-                </div>
-            </div>
+<body>
+  <div class="login-container">
+    <div class="login-card">
+      <!-- Brand Section -->
+      <div class="login-brand">
+        <div class="login-brand-circle">T</div>
+        <h1>Tialo Japan Surplus</h1>
+        <p>POS System</p>
+      </div>
+
+      <!-- Form Section -->
+      <div class="login-form-section">
+        <?php if ($error): ?>
+          <div class="login-error">
+            <svg class="login-error-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <div><?php echo htmlspecialchars($error); ?></div>
+          </div>
+        <?php endif; ?>
+
+        <form method="POST" action="login_process.php">
+          <div class="form-group">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" name="email" placeholder="admin@tialo.com" required autofocus>
+          </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" placeholder="••••••••" required>
+          </div>
+          <button type="submit" class="login-submit">Sign In</button>
+        </form>
+      </div>
+
+      <!-- Footer Section -->
+      <div class="login-footer">
+        <div class="login-footer-label">Demo Credentials</div>
+        <div class="login-credentials">
+          <div class="login-credentials-item">admin@tialo.com</div>
+          <div class="login-credentials-item">admin123</div>
         </div>
-        
-        <!-- Footer Text -->
-        <div class="text-center mt-6 text-slate-400 text-xs">
-            <p>© 2025 Tialo Japan Surplus - POS System</p>
-        </div>
+      </div>
     </div>
+  </div>
 </body>
 </html>

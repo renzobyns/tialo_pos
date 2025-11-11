@@ -2,7 +2,7 @@
 include 'includes/auth_check.php';
 checkRole('Admin');
 include 'includes/db_connect.php';
-
+include 'includes/sidebar.php';
 
 $today = date('Y-m-d');
 
@@ -23,223 +23,287 @@ $today_transactions = $conn->query("SELECT COUNT(*) as count FROM transactions W
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Tialo Japan Surplus</title>
-    <?php include 'includes/tailwind-cdn.html'; ?>
+    <style>
+      :root {
+        --color-bg-app: #F5F3F4;
+        --color-surface: #FFFFFF;
+        --color-text-strong: #161A1D;
+        --color-text-muted: #B1A7A6;
+        --color-border: #D3D3D3;
+        --color-primary: #BA181B;
+        --color-primary-hover: #A4161A;
+        --color-accent: #E5383B;
+      }
+
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+      
+      .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+
+      .kpi-card {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: 10px;
+        padding: 20px;
+        display: flex;
+        gap: 14px;
+      }
+
+      .kpi-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        flex-shrink: 0;
+      }
+
+      .kpi-icon.sales { background: #FEE; color: var(--color-primary); }
+      .kpi-icon.stock { background: #FEF3C7; color: #D97706; }
+      .kpi-icon.items { background: #DBEAFE; color: #2563EB; }
+      .kpi-icon.txn { background: #F3E8FF; color: #7C3AED; }
+
+      .kpi-content h3 {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--color-text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 4px;
+      }
+
+      .kpi-value {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--color-text-strong);
+      }
+
+      .data-table {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: 10px;
+        overflow: hidden;
+      }
+
+      .table-header {
+        background: linear-gradient(135deg, #0B090A 0%, #161A1D 100%);
+        color: white;
+        padding: 16px 20px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .table-header h3 {
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      .table-body {
+        padding: 0;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+
+      thead tr {
+        border-bottom: 1px solid var(--color-border);
+        background: #FAFAF9;
+      }
+
+      th {
+        padding: 10px 16px;
+        text-align: left;
+        font-weight: 600;
+        color: var(--color-text-strong);
+      }
+
+      tbody tr {
+        border-bottom: 1px solid #F3F2F1;
+      }
+
+      tbody tr:hover {
+        background: #F9F8F8;
+      }
+
+      td {
+        padding: 10px 16px;
+        color: var(--color-text-strong);
+      }
+
+      .status-badge {
+        display: inline-block;
+        padding: 3px 8px;
+        background: #FEF2F2;
+        color: #991B1B;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 600;
+      }
+
+      .section-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+        gap: 20px;
+        margin-bottom: 24px;
+      }
+
+      @media (max-width: 768px) {
+        .section-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 32px 20px;
+        color: var(--color-text-muted);
+      }
+    </style>
 </head>
-<body class="bg-slate-50">
-    <?php include 'includes/header.php'; ?>
+<body style="background: var(--color-bg-app);">
+    <!-- Replaced header with sidebar include -->
     
-    <main class="max-w-7xl mx-auto px-4 py-8">
-        <!-- Header -->
-        <div class="mb-8">
-            <h2 class="text-4xl font-bold text-slate-900 mb-2">Dashboard Overview</h2>
-            <p class="text-slate-600 flex items-center space-x-2">
-                <i class="fas fa-calendar text-emerald-600"></i>
-                <span><?php echo date('F d, Y'); ?></span>
-            </p>
-        </div>
-        
-        <!-- Stats Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <!-- Daily Sales Card -->
-            <div class="bg-white rounded-xl shadow-md hover:shadow-lg transition p-6 border-l-4 border-emerald-500">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-slate-600 text-sm font-medium mb-1">Daily Sales</p>
-                        <p class="text-3xl font-bold text-slate-900">₱<?php echo number_format($daily_sales, 2); ?></p>
-                    </div>
-                    <div class="bg-emerald-100 rounded-full p-4">
-                        <i class="fas fa-chart-line text-emerald-600 text-2xl"></i>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Low Stock Card -->
-            <div class="bg-white rounded-xl shadow-md hover:shadow-lg transition p-6 border-l-4 border-amber-500">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-slate-600 text-sm font-medium mb-1">Low Stock Items</p>
-                        <p class="text-3xl font-bold text-slate-900"><?php echo $low_stock_count; ?></p>
-                    </div>
-                    <div class="bg-amber-100 rounded-full p-4">
-                        <i class="fas fa-exclamation-triangle text-amber-600 text-2xl"></i>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Total Products Card -->
-            <div class="bg-white rounded-xl shadow-md hover:shadow-lg transition p-6 border-l-4 border-blue-500">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-slate-600 text-sm font-medium mb-1">Total Products</p>
-                        <p class="text-3xl font-bold text-slate-900"><?php echo $total_products; ?></p>
-                    </div>
-                    <div class="bg-blue-100 rounded-full p-4">
-                        <i class="fas fa-boxes text-blue-600 text-2xl"></i>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Transactions Card -->
-            <div class="bg-white rounded-xl shadow-md hover:shadow-lg transition p-6 border-l-4 border-purple-500">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-slate-600 text-sm font-medium mb-1">Transactions Today</p>
-                        <p class="text-3xl font-bold text-slate-900"><?php echo $today_transactions; ?></p>
-                    </div>
-                    <div class="bg-purple-100 rounded-full p-4">
-                        <i class="fas fa-receipt text-purple-600 text-2xl"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Tables Section -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-            <!-- Top Selling Products -->
-            <div class="bg-white rounded-xl shadow-md overflow-hidden">
-                <div class="bg-gradient-to-r from-slate-900 to-slate-700 px-6 py-4">
-                    <h3 class="text-lg font-bold text-white flex items-center space-x-2">
-                        <i class="fas fa-fire text-orange-400"></i>
-                        <span>Top Selling Products</span>
-                    </h3>
-                </div>
-                <div class="p-6">
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-sm">
-                            <thead>
-                                <tr class="border-b border-slate-200">
-                                    <th class="text-left py-3 px-4 font-semibold text-slate-700">Product</th>
-                                    <th class="text-center py-3 px-4 font-semibold text-slate-700">Qty</th>
-                                    <th class="text-right py-3 px-4 font-semibold text-slate-700">Revenue</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php 
-                                $top_query = "SELECT p.name, SUM(ti.quantity) as qty_sold, SUM(ti.subtotal) as revenue 
-                                             FROM transaction_items ti 
-                                             JOIN products p ON ti.product_id = p.product_id 
-                                             JOIN transactions t ON ti.transaction_id = t.transaction_id 
-                                             WHERE DATE(t.transaction_date) = '$today'
-                                             GROUP BY p.product_id 
-                                             ORDER BY qty_sold DESC LIMIT 5";
-                                $top_result = $conn->query($top_query);
-                                if ($top_result->num_rows > 0) {
-                                    while ($row = $top_result->fetch_assoc()): 
-                                ?>
-                                    <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
-                                        <td class="py-3 px-4 text-slate-900"><?php echo htmlspecialchars($row['name']); ?></td>
-                                        <td class="text-center py-3 px-4 text-slate-700 font-medium"><?php echo $row['qty_sold']; ?></td>
-                                        <td class="text-right py-3 px-4 text-emerald-700 font-semibold">₱<?php echo number_format($row['revenue'], 2); ?></td>
-                                    </tr>
-                                <?php 
-                                    endwhile;
-                                } else {
-                                    echo '<tr><td colspan="3" class="py-6 px-4 text-center text-slate-500"><i class="fas fa-inbox"></i> No sales today</td></tr>';
-                                }
-                                ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Low Stock Alert -->
-            <div class="bg-white rounded-xl shadow-md overflow-hidden">
-                <div class="bg-gradient-to-r from-amber-600 to-amber-700 px-6 py-4">
-                    <h3 class="text-lg font-bold text-white flex items-center space-x-2">
-                        <i class="fas fa-bell text-white"></i>
-                        <span>Low Stock Alert</span>
-                    </h3>
-                </div>
-                <div class="p-6">
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-sm">
-                            <thead>
-                                <tr class="border-b border-slate-200">
-                                    <th class="text-left py-3 px-4 font-semibold text-slate-700">Product</th>
-                                    <th class="text-center py-3 px-4 font-semibold text-slate-700">Stock</th>
-                                    <th class="text-right py-3 px-4 font-semibold text-slate-700">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php 
-                                $low_query = "SELECT product_id, name, quantity FROM products WHERE quantity < 5 AND status = 'Available' ORDER BY quantity ASC LIMIT 5";
-                                $low_result = $conn->query($low_query);
-                                if ($low_result->num_rows > 0) {
-                                    while ($row = $low_result->fetch_assoc()): 
-                                ?>
-                                    <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
-                                        <td class="py-3 px-4 text-slate-900"><?php echo htmlspecialchars($row['name']); ?></td>
-                                        <td class="text-center py-3 px-4 font-medium text-amber-700"><?php echo $row['quantity']; ?></td>
-                                        <td class="text-right py-3 px-4">
-                                            <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800">
-                                                <i class="fas fa-exclamation-circle mr-1"></i>Low Stock
-                                            </span>
-                                        </td>
-                                    </tr>
-                                <?php 
-                                    endwhile;
-                                } else {
-                                    echo '<tr><td colspan="3" class="py-6 px-4 text-center text-slate-500"><i class="fas fa-check-circle mr-2"></i>All stock levels healthy</td></tr>';
-                                }
-                                ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Quick Access -->
-        <div class="bg-gradient-to-r from-slate-900 to-slate-800 rounded-xl shadow-lg p-8 text-white">
-            <h3 class="text-xl font-bold mb-6 flex items-center space-x-2">
-                <i class="fas fa-rocket text-emerald-400"></i>
-                <span>Quick Access</span>
-            </h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <a href="modules/pos/index.php" class="bg-slate-700 hover:bg-slate-600 rounded-lg p-4 transition flex items-center space-x-3 transform hover:scale-105">
-                    <div class="bg-emerald-500 rounded-full p-3">
-                        <i class="fas fa-cash-register text-xl text-white"></i>
-                    </div>
-                    <div>
-                        <p class="font-semibold">Go to POS</p>
-                        <p class="text-sm text-slate-300">Process sales</p>
-                    </div>
-                </a>
-                
-                <a href="modules/inventory/index.php" class="bg-slate-700 hover:bg-slate-600 rounded-lg p-4 transition flex items-center space-x-3 transform hover:scale-105">
-                    <div class="bg-blue-500 rounded-full p-3">
-                        <i class="fas fa-boxes text-xl text-white"></i>
-                    </div>
-                    <div>
-                        <p class="font-semibold">Manage Inventory</p>
-                        <p class="text-sm text-slate-300">Stock control</p>
-                    </div>
-                </a>
-                
-                <a href="modules/reports/index.php" class="bg-slate-700 hover:bg-slate-600 rounded-lg p-4 transition flex items-center space-x-3 transform hover:scale-105">
-                    <div class="bg-purple-500 rounded-full p-3">
-                        <i class="fas fa-chart-bar text-xl text-white"></i>
-                    </div>
-                    <div>
-                        <p class="font-semibold">View Reports</p>
-                        <p class="text-sm text-slate-300">Analytics</p>
-                    </div>
-                </a>
-                
-                <a href="modules/users/index.php" class="bg-slate-700 hover:bg-slate-600 rounded-lg p-4 transition flex items-center space-x-3 transform hover:scale-105">
-                    <div class="bg-pink-500 rounded-full p-3">
-                        <i class="fas fa-users text-xl text-white"></i>
-                    </div>
-                    <div>
-                        <p class="font-semibold">Manage Users</p>
-                        <p class="text-sm text-slate-300">Admin panel</p>
-                    </div>
-                </a>
-            </div>
-        </div>
-    </main>
+    <div class="app-topbar">
+      <div class="app-topbar-title">
+        <h1>Dashboard</h1>
+      </div>
+    </div>
     
-    <?php include 'includes/footer.php'; ?>
+    <div class="app-content">
+      <!-- KPI Cards -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-icon sales">₱</div>
+          <div class="kpi-content">
+            <h3>Daily Sales</h3>
+            <div class="kpi-value"><?php echo number_format($daily_sales, 0); ?></div>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-icon stock">⚠</div>
+          <div class="kpi-content">
+            <h3>Low Stock Items</h3>
+            <div class="kpi-value"><?php echo $low_stock_count; ?></div>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-icon items">📦</div>
+          <div class="kpi-content">
+            <h3>Total Products</h3>
+            <div class="kpi-value"><?php echo $total_products; ?></div>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-icon txn">📄</div>
+          <div class="kpi-content">
+            <h3>Transactions Today</h3>
+            <div class="kpi-value"><?php echo $today_transactions; ?></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tables Section -->
+      <div class="section-grid">
+        <!-- Top Selling Products -->
+        <div class="data-table">
+          <div class="table-header">
+            <span style="font-size: 18px;">🔥</span>
+            <h3>Top Selling Products</h3>
+          </div>
+          <div class="table-body">
+            <table>
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th style="text-align: center;">Qty</th>
+                  <th style="text-align: right;">Revenue</th>
+                </tr>
+              </thead>
+              <tbody>
+                <?php 
+                $top_query = "SELECT p.name, SUM(ti.quantity) as qty_sold, SUM(ti.subtotal) as revenue 
+                             FROM transaction_items ti 
+                             JOIN products p ON ti.product_id = p.product_id 
+                             JOIN transactions t ON ti.transaction_id = t.transaction_id 
+                             WHERE DATE(t.transaction_date) = '$today'
+                             GROUP BY p.product_id 
+                             ORDER BY qty_sold DESC LIMIT 5";
+                $top_result = $conn->query($top_query);
+                if ($top_result->num_rows > 0) {
+                    while ($row = $top_result->fetch_assoc()): 
+                ?>
+                    <tr>
+                      <td><?php echo htmlspecialchars($row['name']); ?></td>
+                      <td style="text-align: center; font-weight: 500;"><?php echo $row['qty_sold']; ?></td>
+                      <td style="text-align: right; color: var(--color-primary); font-weight: 600;">₱<?php echo number_format($row['revenue'], 2); ?></td>
+                    </tr>
+                <?php 
+                    endwhile;
+                } else {
+                    echo '<tr><td colspan="3" class="empty-state">No sales today</td></tr>';
+                }
+                ?>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Low Stock Alert -->
+        <div class="data-table">
+          <div class="table-header">
+            <span style="font-size: 18px; color: #FCD34D;">🔔</span>
+            <h3>Low Stock Alert</h3>
+          </div>
+          <div class="table-body">
+            <table>
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th style="text-align: center;">Stock</th>
+                  <th style="text-align: right;">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <?php 
+                $low_query = "SELECT product_id, name, quantity FROM products WHERE quantity < 5 AND status = 'Available' ORDER BY quantity ASC LIMIT 5";
+                $low_result = $conn->query($low_query);
+                if ($low_result->num_rows > 0) {
+                    while ($row = $low_result->fetch_assoc()): 
+                ?>
+                    <tr>
+                      <td><?php echo htmlspecialchars($row['name']); ?></td>
+                      <td style="text-align: center; font-weight: 500;"><?php echo $row['quantity']; ?></td>
+                      <td style="text-align: right;">
+                        <span class="status-badge">Low Stock</span>
+                      </td>
+                    </tr>
+                <?php 
+                    endwhile;
+                } else {
+                    echo '<tr><td colspan="3" class="empty-state">All stock levels healthy ✓</td></tr>';
+                }
+                ?>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    </div> <!-- Close app-container from sidebar.php -->
 </body>
 </html>
