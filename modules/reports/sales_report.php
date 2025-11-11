@@ -42,14 +42,20 @@ if ($payment_type !== 'All') {
 $total_result = $conn->query($total_query)->fetch_assoc();
 ?>
 
-<div class="sales-report">
-    <div class="report-filters">
-        <form method="GET" class="filter-form">
+<div class="sales-report space-y-6">
+    <!-- Filters -->
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center space-x-2">
+            <i class="fas fa-filter text-blue-600"></i>
+            <span>Filter Report</span>
+        </h3>
+        
+        <form method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <input type="hidden" name="tab" value="sales">
             
-            <div class="filter-group">
-                <label>Period:</label>
-                <select name="period" onchange="this.form.submit()">
+            <div>
+                <label for="period" class="block text-sm font-semibold text-slate-700 mb-2">Period:</label>
+                <select name="period" id="period" onchange="this.form.submit()" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                     <option value="daily" <?php echo $period === 'daily' ? 'selected' : ''; ?>>Daily</option>
                     <option value="weekly" <?php echo $period === 'weekly' ? 'selected' : ''; ?>>Weekly</option>
                     <option value="monthly" <?php echo $period === 'monthly' ? 'selected' : ''; ?>>Monthly</option>
@@ -58,24 +64,24 @@ $total_result = $conn->query($total_query)->fetch_assoc();
             </div>
             
             <?php if ($period === 'custom'): ?>
-                <div class="filter-group">
-                    <label>Start Date:</label>
-                    <input type="date" name="start_date" value="<?php echo $start_date; ?>">
+                <div>
+                    <label for="start_date" class="block text-sm font-semibold text-slate-700 mb-2">Start Date:</label>
+                    <input type="date" name="start_date" value="<?php echo $start_date; ?>" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
-                <div class="filter-group">
-                    <label>End Date:</label>
-                    <input type="date" name="end_date" value="<?php echo $end_date; ?>">
+                <div>
+                    <label for="end_date" class="block text-sm font-semibold text-slate-700 mb-2">End Date:</label>
+                    <input type="date" name="end_date" value="<?php echo $end_date; ?>" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
             <?php else: ?>
-                <div class="filter-group">
-                    <label>Date:</label>
-                    <input type="date" name="start_date" value="<?php echo $start_date; ?>">
+                <div>
+                    <label for="start_date" class="block text-sm font-semibold text-slate-700 mb-2">Date:</label>
+                    <input type="date" name="start_date" value="<?php echo $start_date; ?>" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
             <?php endif; ?>
             
-            <div class="filter-group">
-                <label>Payment Type:</label>
-                <select name="payment_type" onchange="this.form.submit()">
+            <div>
+                <label for="payment_type" class="block text-sm font-semibold text-slate-700 mb-2">Payment Type:</label>
+                <select name="payment_type" onchange="this.form.submit()" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                     <option value="All">All</option>
                     <option value="Cash" <?php echo $payment_type === 'Cash' ? 'selected' : ''; ?>>Cash</option>
                     <option value="GCash" <?php echo $payment_type === 'GCash' ? 'selected' : ''; ?>>GCash</option>
@@ -83,46 +89,69 @@ $total_result = $conn->query($total_query)->fetch_assoc();
                 </select>
             </div>
             
-            <button type="submit" class="btn-filter">Apply Filter</button>
-            <a href="export.php?type=sales&period=<?php echo $period; ?>&start_date=<?php echo $start_date; ?>&end_date=<?php echo $end_date; ?>&payment_type=<?php echo $payment_type; ?>" class="btn-export">Export PDF</a>
+            <div class="flex items-end gap-2">
+                <button type="submit" class="flex items-center space-x-2 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition font-semibold flex-1">
+                    <i class="fas fa-search"></i>
+                    <span>Apply</span>
+                </button>
+                <a href="export.php?type=sales&period=<?php echo $period; ?>&start_date=<?php echo $start_date; ?>&end_date=<?php echo $end_date; ?>&payment_type=<?php echo $payment_type; ?>" class="flex items-center space-x-2 bg-emerald-600 text-white px-6 py-2 rounded-lg hover:bg-emerald-700 transition font-semibold">
+                    <i class="fas fa-download"></i>
+                    <span>Export</span>
+                </a>
+            </div>
         </form>
     </div>
     
-    <div class="report-summary">
-        <div class="summary-card">
-            <h4>Total Sales</h4>
-            <p class="summary-value">₱<?php echo number_format($total_result['total_sales'] ?? 0, 2); ?></p>
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-lg p-8 text-white">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-blue-100 font-semibold">Total Sales</p>
+                    <p class="text-4xl font-bold">₱<?php echo number_format($total_result['total_sales'] ?? 0, 2); ?></p>
+                </div>
+                <i class="fas fa-chart-line text-blue-200 text-5xl opacity-50"></i>
+            </div>
         </div>
-        <div class="summary-card">
-            <h4>Transactions</h4>
-            <p class="summary-value"><?php echo $total_result['transaction_count'] ?? 0; ?></p>
+        
+        <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg shadow-lg p-8 text-white">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-purple-100 font-semibold">Number of Transactions</p>
+                    <p class="text-4xl font-bold"><?php echo $total_result['transaction_count'] ?? 0; ?></p>
+                </div>
+                <i class="fas fa-receipt text-purple-200 text-5xl opacity-50"></i>
+            </div>
         </div>
     </div>
     
-    <div class="table-responsive">
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>Transaction ID</th>
-                    <th>Date & Time</th>
-                    <th>Cashier</th>
-                    <th>Items</th>
-                    <th>Payment Type</th>
-                    <th>Amount</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php while ($row = $result->fetch_assoc()): ?>
-                    <tr>
-                        <td>#<?php echo str_pad($row['transaction_id'], 6, '0', STR_PAD_LEFT); ?></td>
-                        <td><?php echo date('M d, Y H:i', strtotime($row['transaction_date'])); ?></td>
-                        <td><?php echo htmlspecialchars($row['cashier_name']); ?></td>
-                        <td><?php echo $row['item_count']; ?></td>
-                        <td><?php echo htmlspecialchars($row['payment_type']); ?></td>
-                        <td>₱<?php echo number_format($row['total_amount'], 2); ?></td>
+    <!-- Transactions Table -->
+    <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="bg-slate-100 border-b-2 border-slate-200">
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-slate-700">Transaction ID</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-slate-700">Date & Time</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-slate-700">Cashier</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-slate-700">Items</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-slate-700">Payment Type</th>
+                        <th class="px-6 py-4 text-right text-sm font-semibold text-slate-700">Amount</th>
                     </tr>
-                <?php endwhile; ?>
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    <?php while ($row = $result->fetch_assoc()): ?>
+                        <tr class="border-b border-slate-200 hover:bg-slate-50 transition">
+                            <td class="px-6 py-4 text-sm font-semibold text-slate-900">#<?php echo str_pad($row['transaction_id'], 6, '0', STR_PAD_LEFT); ?></td>
+                            <td class="px-6 py-4 text-sm text-slate-600"><?php echo date('M d, Y H:i', strtotime($row['transaction_date'])); ?></td>
+                            <td class="px-6 py-4 text-sm text-slate-600"><?php echo htmlspecialchars($row['cashier_name']); ?></td>
+                            <td class="px-6 py-4 text-sm"><span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full font-semibold"><?php echo $row['item_count']; ?></span></td>
+                            <td class="px-6 py-4 text-sm"><?php echo htmlspecialchars($row['payment_type']); ?></td>
+                            <td class="px-6 py-4 text-sm font-semibold text-slate-900 text-right">₱<?php echo number_format($row['total_amount'], 2); ?></td>
+                        </tr>
+                    <?php endwhile; ?>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>

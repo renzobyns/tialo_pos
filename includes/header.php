@@ -1,40 +1,64 @@
 <?php
-// Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
     header("Location: index.php");
     exit();
 }
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tialo Japan Surplus - POS System</title>
-    <link rel="stylesheet" href="assets/css/style.css">
-</head>
-<body>
-    <header class="navbar">
-        <div class="navbar-container">
-            <div class="navbar-brand">
-                <h1>Tialo Japan Surplus</h1>
-                <span class="badge">POS System</span>
+<nav class="bg-gradient-to-r from-slate-900 to-slate-800 shadow-lg border-b border-slate-700">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-16">
+            <!-- Logo -->
+            <div class="flex items-center space-x-3">
+                <div class="text-white font-bold text-xl">
+                    <i class="fas fa-store text-emerald-500"></i> Tialo Japan
+                </div>
             </div>
             
-            <nav class="navbar-menu">
+            <!-- Navigation Links -->
+            <div class="hidden md:flex items-center space-x-1">
                 <?php if ($_SESSION['role'] === 'Admin'): ?>
-                    <a href="/tialo_pos/dashboard.php" class="nav-link">Dashboard</a>
-                    <a href="/tialo_pos/modules/inventory/index.php" class="nav-link">Inventory</a>
-                    <a href="/tialo_pos/modules/reports/index.php" class="nav-link">Reports</a>
-                    <a href="/tialo_pos/modules/users/index.php" class="nav-link">Users</a>
+                    <a href="<?php echo strpos($_SERVER['REQUEST_URI'], 'modules') !== false ? '../../' : ''; ?>dashboard.php" 
+                       class="px-4 py-2 rounded-lg text-slate-200 hover:bg-slate-700 transition">
+                        <i class="fas fa-chart-line mr-2"></i>Dashboard
+                    </a>
+                    <a href="<?php echo strpos($_SERVER['REQUEST_URI'], 'modules') !== false ? '../../modules/pos/index.php' : 'modules/pos/index.php'; ?>" 
+                       class="px-4 py-2 rounded-lg text-slate-200 hover:bg-slate-700 transition">
+                        <i class="fas fa-cash-register mr-2"></i>POS
+                    </a>
+                    <a href="<?php echo strpos($_SERVER['REQUEST_URI'], 'modules') !== false ? '../../modules/inventory/index.php' : 'modules/inventory/index.php'; ?>" 
+                       class="px-4 py-2 rounded-lg text-slate-200 hover:bg-slate-700 transition">
+                        <i class="fas fa-boxes mr-2"></i>Inventory
+                    </a>
+                    <a href="<?php echo strpos($_SERVER['REQUEST_URI'], 'modules') !== false ? '../../modules/reports/index.php' : 'modules/reports/index.php'; ?>" 
+                       class="px-4 py-2 rounded-lg text-slate-200 hover:bg-slate-700 transition">
+                        <i class="fas fa-file-chart-line mr-2"></i>Reports
+                    </a>
+                    <a href="<?php echo strpos($_SERVER['REQUEST_URI'], 'modules') !== false ? '../../modules/users/index.php' : 'modules/users/index.php'; ?>" 
+                       class="px-4 py-2 rounded-lg text-slate-200 hover:bg-slate-700 transition">
+                        <i class="fas fa-users mr-2"></i>Users
+                    </a>
+                <?php else: ?>
+                    <a href="<?php echo strpos($_SERVER['REQUEST_URI'], 'modules') !== false ? '../../modules/pos/index.php' : 'modules/pos/index.php'; ?>" 
+                       class="px-4 py-2 rounded-lg text-slate-200 hover:bg-slate-700 transition">
+                        <i class="fas fa-cash-register mr-2"></i>POS
+                    </a>
                 <?php endif; ?>
-                
-                <a href="/tialo_pos/modules/pos/index.php" class="nav-link">POS</a>
-            </nav>
+            </div>
             
-            <div class="navbar-right">
-                <span class="user-info">Welcome, <?php echo htmlspecialchars($_SESSION['name']); ?></span>
-                <a href="/tialo_pos/modules/auth/logout.php" class="btn-logout">Logout</a>
+            <!-- User Menu -->
+            <div class="flex items-center space-x-4">
+                <div class="text-sm text-slate-300">
+                    <i class="fas fa-user mr-2"></i><?php echo htmlspecialchars($_SESSION['name']); ?>
+                    <span class="ml-2 px-2 py-1 rounded-full text-xs font-semibold 
+                                 <?php echo $_SESSION['role'] === 'Admin' ? 'bg-purple-600 text-white' : 'bg-blue-600 text-white'; ?>">
+                        <?php echo $_SESSION['role']; ?>
+                    </span>
+                </div>
+                <a href="<?php echo strpos($_SERVER['REQUEST_URI'], 'modules') !== false ? '../../modules/auth/logout.php' : 'modules/auth/logout.php'; ?>" 
+                   class="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white transition font-medium">
+                    <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                </a>
             </div>
         </div>
-    </header>
+    </div>
+</nav>

@@ -1,11 +1,11 @@
 # Tialo Japan Surplus - POS System
 
-A comprehensive Point of Sale (POS) system with inventory management, built with PHP, MySQL, HTML, CSS, and JavaScript.
+A comprehensive Point of Sale (POS) system with inventory management, built with **PHP, MySQL, HTML, CSS, and JavaScript**, featuring a modern UI powered by **Tailwind CSS** and **Font Awesome Icons**.
 
 ## Features
 
 ### Authentication
-- Secure login/logout system
+- Secure login/logout system with modern design
 - Role-based access control (Admin, Cashier)
 - Password hashing with bcrypt
 
@@ -14,7 +14,7 @@ A comprehensive Point of Sale (POS) system with inventory management, built with
 - Shopping cart with quantity management
 - Multiple payment options (Cash, GCash, Installment)
 - E-receipt generation
-- Manual price discounts 
+- Manual price discounts
 
 ### Inventory Management
 - Shipment tracking (incoming deliveries)
@@ -42,6 +42,7 @@ A comprehensive Point of Sale (POS) system with inventory management, built with
 - MySQL 5.7 or higher
 - Apache with mod_rewrite enabled
 - XAMPP (recommended for local development)
+- Modern web browser (Chrome, Firefox, Safari, Edge)
 
 ## Installation
 
@@ -68,7 +69,80 @@ define('DB_NAME', 'tialo_posdb');
 1. Copy the entire `tialo_pos` folder to `C:\xampp\htdocs\` (Windows) or `/Applications/XAMPP/htdocs/` (Mac)
 2. Access the application at `http://localhost/tialo_pos/`
 
-### 4. Login
+### 4. Setup Tailwind CSS (Frontend Framework)
+
+The application uses **Tailwind CSS via CDN** for styling, which means no build process is required. The Tailwind CSS CDN link is already included in the HTML files.
+
+#### If you want to use Tailwind CSS Build Process (Optional):
+
+For production optimization, you can set up Tailwind CSS with a build process:
+
+1. **Install Node.js** from [nodejs.org](https://nodejs.org/)
+
+2. **Initialize Node.js project** in your `tialo_pos` directory:
+   \`\`\`bash
+   npm init -y
+   \`\`\`
+
+3. **Install Tailwind CSS and dependencies**:
+   \`\`\`bash
+   npm install -D tailwindcss postcss autoprefixer
+   npx tailwindcss init -p
+   \`\`\`
+
+4. **Update `tailwind.config.js`**:
+   \`\`\`js
+   module.exports = {
+     content: [
+       "./**/*.php",
+       "./assets/js/**/*.js",
+     ],
+     theme: {
+       extend: {},
+     },
+     plugins: [],
+   }
+   \`\`\`
+
+5. **Create `assets/css/input.css`**:
+   \`\`\`css
+   @tailwind base;
+   @tailwind components;
+   @tailwind utilities;
+   \`\`\`
+
+6. **Build Tailwind CSS**:
+   \`\`\`bash
+   npx tailwindcss -i ./assets/css/input.css -o ./assets/css/output.css
+   \`\`\`
+
+7. **Update HTML files** - Replace the CDN link with:
+   \`\`\`html
+   <link rel="stylesheet" href="/assets/css/output.css">
+   \`\`\`
+
+8. **Add to `package.json` scripts** (Optional - for easier building):
+   \`\`\`json
+   "scripts": {
+     "build:css": "tailwindcss -i ./assets/css/input.css -o ./assets/css/output.css",
+     "watch:css": "tailwindcss -i ./assets/css/input.css -o ./assets/css/output.css --watch"
+   }
+   \`\`\`
+
+### 5. Icon Library (Font Awesome)
+
+The application uses **Font Awesome 6.4** for icons, loaded via CDN. Icons are already integrated in the HTML files.
+
+To use Font Awesome icons, use the `<i>` tag with Font Awesome classes:
+\`\`\`html
+<i class="fas fa-store"></i>
+<i class="fas fa-cash-register"></i>
+<i class="fas fa-boxes"></i>
+\`\`\`
+
+Find more icons at [Font Awesome Icons](https://fontawesome.com/icons)
+
+### 6. Login
 
 Use the default admin credentials:
 - **Email**: admin@tialo.com
@@ -82,60 +156,75 @@ Use the default admin credentials:
 tialo_pos/
 ├── assets/
 │   ├── css/
-│   │   ├── style.css           (Main styles)
-│   │   ├── auth.css            (Login page styles)
-│   │   ├── pos.css             (POS module styles)
-│   │   ├── inventory.css       (Inventory styles)
-│   │   ├── dashboard.css       (Dashboard styles)
-│   │   ├── reports.css         (Reports styles)
-│   │   └── users.css           (User management styles)
+│   │   ├── tailwind-custom.css    (Custom Tailwind utilities)
+│   │   └── [deprecated CSS files removed]
 │   ├── js/
-│   │   └── pos.js              (POS cart functionality)
+│   │   └── pos.js                 (POS cart functionality)
 │   └── img/
 │
 ├── includes/
-│   ├── db_connect.php          (Database connection)
-│   ├── header.php              (Navigation bar)
-│   ├── footer.php              (Footer)
-│   └── auth_check.php          (Session & role verification)
+│   ├── db_connect.php             (Database connection)
+│   ├── header.php                 (Navigation bar - Tailwind)
+│   ├── footer.php                 (Footer - Tailwind)
+│   ├── auth_check.php             (Session & role verification)
+│   └── tailwind-cdn.html          (Tailwind + Font Awesome CDN)
 │
 ├── modules/
 │   ├── auth/
-│   │   ├── login.php
+│   │   ├── login.php              (Login page - Tailwind)
 │   │   ├── login_process.php
 │   │   └── logout.php
 │   ├── pos/
-│   │   ├── index.php           (Product catalog)
-│   │   ├── checkout.php        (Checkout page)
+│   │   ├── index.php              (Product catalog - Tailwind)
+│   │   ├── checkout.php           (Checkout - Tailwind)
 │   │   ├── process_checkout.php
-│   │   ├── receipt.php         (E-receipt)
+│   │   ├── receipt.php            (E-receipt - Tailwind)
 │   │   └── save_cart.php
 │   ├── inventory/
-│   │   ├── index.php           (Main inventory)
-│   │   ├── shipments.php
-│   │   ├── shipment_form.php
-│   │   ├── products.php
-│   │   ├── product_form.php
+│   │   ├── index.php              (Main inventory - Tailwind)
+│   │   ├── shipments.php          (Shipments - Tailwind)
+│   │   ├── shipment_form.php      (Shipment form - Tailwind)
+│   │   ├── products.php           (Products - Tailwind)
+│   │   ├── product_form.php       (Product form - Tailwind)
 │   │   ├── process_shipment.php
 │   │   └── process_product.php
 │   ├── reports/
-│   │   ├── index.php           (Reports dashboard)
+│   │   ├── index.php              (Reports - Tailwind)
 │   │   ├── sales_report.php
 │   │   ├── installment_report.php
 │   │   ├── inventory_report.php
 │   │   └── export.php
 │   └── users/
-│       ├── index.php           (User management)
-│       ├── user_form.php
+│       ├── index.php              (User management - Tailwind)
+│       ├── user_form.php          (User form - Tailwind)
 │       └── process_user.php
 │
 ├── scripts/
-│   └── 01_create_database.sql  (Database setup)
+│   ├── 01_create_database.sql
+│   └── 02_sample_data.sql
 │
-├── index.php                   (Entry point)
-├── dashboard.php               (Admin dashboard)
-└── README.md                   (This file)
+├── index.php                      (Entry point)
+├── dashboard.php                  (Admin dashboard - Tailwind)
+└── README.md                      (This file)
 \`\`\`
+
+## Tailwind CSS Classes Used
+
+### Common Utilities
+- **Spacing**: `px-4`, `py-2`, `mb-8`, `gap-6`
+- **Colors**: `bg-emerald-600`, `text-slate-900`, `border-blue-500`
+- **Sizing**: `w-full`, `h-48`, `max-w-7xl`
+- **Typography**: `text-lg`, `font-bold`, `text-slate-600`
+- **Layout**: `flex`, `grid`, `grid-cols-3`, `gap-4`
+- **Responsive**: `md:flex`, `lg:col-span-3`, `sm:grid-cols-2`
+- **Effects**: `shadow-md`, `hover:shadow-lg`, `transition`, `rounded-xl`
+- **Displays**: `flex items-center`, `justify-between`, `space-x-2`
+
+### Color Scheme
+- **Primary**: Emerald (`emerald-600`) - for actions and highlights
+- **Secondary**: Slate (`slate-900`) - for text and backgrounds
+- **Accent**: Blue, Purple, Amber - for different data categories
+- **Neutral**: Gray shades for borders and dividers
 
 ## User Roles & Permissions
 
@@ -302,10 +391,23 @@ tialo_pos/
 - Check browser console for errors
 - Verify session is active
 
+### Tailwind Styles Not Loading
+- **Using CDN**: Check internet connection and CDN availability
+- **Using Build Process**: Run `npm run build:css` to regenerate output.css
+- Clear browser cache (Ctrl+Shift+Delete on Windows, Cmd+Shift+Delete on Mac)
+
 ### Reports Not Showing Data
 - Verify transactions exist in database
 - Check date filters are correct
 - Ensure user has Admin role
+
+## Frontend Technologies
+
+- **Tailwind CSS 3.3+** - Utility-first CSS framework
+- **Font Awesome 6.4** - Icon library
+- **Vanilla JavaScript** - No frameworks required
+- **HTML5** - Semantic markup
+- **Responsive Design** - Mobile, tablet, and desktop friendly
 
 ## Support & Maintenance
 
@@ -317,5 +419,7 @@ This project is proprietary software for Tialo Japan Surplus.
 
 ---
 
-**Version**: 1.0.0  
-**Last Updated**: 2025
+**Version**: 2.0.0 (Tailwind CSS Redesign)  
+**Last Updated**: 2025  
+**Frontend Framework**: Tailwind CSS 3.3+  
+**Icon Library**: Font Awesome 6.4
