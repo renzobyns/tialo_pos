@@ -1,425 +1,209 @@
-# Tialo Japan Surplus - POS System
+﻿# Tialo Japan Surplus POS
 
-A comprehensive Point of Sale (POS) system with inventory management, built with **PHP, MySQL, HTML, CSS, and JavaScript**, featuring a modern UI powered by **Tailwind CSS** and **Font Awesome Icons**.
+A modular Point of Sale + Inventory system for Tialo Japan Surplus. The codebase is PHP/MySQL on the back end with Tailwind-driven UI patterns and a collapsible sidebar shell shared by every module (Dashboard, POS, Inventory, Reports, Users). The current sprint focused on aligning every screen with the **Fiery Red Sunset** palette plus a cleaner card-based layout described in `reference/Final Sitemap.docx`.
 
-## Features
+## Table of Contents
+- [Overview](#overview)
+- [Tech Stack](#tech-stack)
+- [UI System](#ui-system)
+- [Directory Layout](#directory-layout)
+- [Getting Started](#getting-started)
+  - [Requirements](#requirements)
+  - [Clone & Configure](#clone--configure)
+  - [Database](#database)
+  - [Run the App](#run-the-app)
+- [Modules](#modules)
+  - [Authentication & Sessions](#authentication--sessions)
+  - [Dashboard](#dashboard)
+  - [Point of Sale](#point-of-sale)
+  - [Inventory Management](#inventory-management)
+  - [Reports](#reports)
+  - [User Management](#user-management)
+- [Data & Utilities](#data--utilities)
+- [Styling & Front-end](#styling--front-end)
+- [Quality Checklist](#quality-checklist)
+- [Deployment](#deployment)
+- [Troubleshooting](#troubleshooting)
+- [Support & License](#support--license)
 
-### Authentication
-- Secure login/logout system with modern design
-- Role-based access control (Admin, Cashier)
-- Password hashing with bcrypt
+## Overview
+This repository delivers the full store workflow:
+- **Authentication** with bcrypt-protected accounts, role gating (Admin vs Cashier) and a collapsible sidebar that adapts to the signed-in role.
+- **POS** optimized for 17"/1080p laptops: catalog filtering, keyboard shortcuts (F2–F5), discount validation, Cash/GCash/Installment checkout, and digital receipts.
+- **Inventory** split between shipment folders and the live product catalog, mirroring the "folder + contents" spec from the Final Sitemap.
+- **Reports** for Sales, Installment, and Inventory logs with date ranges, payment-type filters, staff filters, and CSV export.
+- **User Management** with CRUD + role filters so admins can isolate Cashiers quickly.
 
-### POS Module
-- Product search and category filtering
-- Shopping cart with quantity management
-- Multiple payment options (Cash, GCash, Installment)
-- E-receipt generation
-- Manual price discounts
+## Tech Stack
+- **Language**: PHP 8+ (mysqli + procedural helpers)
+- **Database**: MySQL 5.7/8.0 (DDL in `scripts/01_create_database.sql`)
+- **Styling**: Tailwind CSS (CDN) + small utility overrides in `assets/css/tailwind-custom.css`
+- **Icons**: Font Awesome 6.4 (legacy header) + inline Heroicons/Lucide-inspired SVGs in the new sidebar and forms
+- **Fonts**: Inter via Google Fonts
+- **Front-end logic**: Vanilla JS (`assets/js/pos.js`) for cart state, payment toggles, keyboard shortcuts, and async checkout
+- **Session/Auth utilities**: `includes/auth_check.php`, `includes/sidebar.php`
 
-### Inventory Management
-- Shipment tracking (incoming deliveries)
-- Product CRUD operations
-- Stock level management
-- Product categorization
+## UI System
+### Fiery Red Sunset Palette
+| Token | Hex | Primary Usage |
+| --- | --- | --- |
+| Ink | `#03071E` | App shell background, overlays |
+| Wine | `#370617` | Gradient midpoint, subtle borders |
+| Garnet | `#6A040F` | Headlines, emphasis text |
+| Crimson | `#9D0208` | Hover/active states |
+| Signal | `#D00000` | Primary CTA buttons and badges |
+| Fire | `#DC2F02` | Secondary buttons, chips |
+| Citrus | `#E85D04` | Alerts and highlights |
+| Amber | `#F48C06` | Focus rings, selections |
+| Honey | `#FAA307` | Informational tags |
+| Gold | `#FFBA08` | Breadcrumbs, accent text |
 
-### Dashboard & Reports
-- Daily sales overview
-- Low stock alerts
-- Top-selling products
-- Sales reports (daily/weekly/monthly)
-- Installment tracking
-- Inventory reports
-- CSV export functionality
+**Typography & Icons**
+- Inter is enforced globally (see every `<style>* { font-family: 'Inter' }</style>` block).
+- Font Awesome is still used in legacy `includes/header.php`; all modern screens rely on inline SVGs for crisp icons without extra network calls.
+- `includes/sidebar.php` contains the collapsible navigation with CSS variables and localStorage-backed state.
 
-### User Management
-- Add/edit/delete users
-- Role assignment
-- User activity tracking
-
-## System Requirements
-
-- PHP 7.4 or higher
-- MySQL 5.7 or higher
-- Apache with mod_rewrite enabled
-- XAMPP (recommended for local development)
-- Modern web browser (Chrome, Firefox, Safari, Edge)
-
-## Installation
-
-### 1. Setup Database
-
-1. Open phpMyAdmin (http://localhost/phpmyadmin)
-2. Create a new database named `tialo_posdb`
-3. Import the SQL script from `scripts/01_create_database.sql`
-4. The database will be created with all tables and a sample admin user
-
-### 2. Configure Database Connection
-
-Edit `includes/db_connect.php` and update the following if needed:
-
-\`\`\`php
-define('DB_HOST', 'localhost');
-define('DB_USER', 'root');
-define('DB_PASS', '');
-define('DB_NAME', 'tialo_posdb');
-\`\`\`
-
-### 3. Place Files in XAMPP
-
-1. Copy the entire `tialo_pos` folder to `C:\xampp\htdocs\` (Windows) or `/Applications/XAMPP/htdocs/` (Mac)
-2. Access the application at `http://localhost/tialo_pos/`
-
-### 4. Setup Tailwind CSS (Frontend Framework)
-
-The application uses **Tailwind CSS via CDN** for styling, which means no build process is required. The Tailwind CSS CDN link is already included in the HTML files.
-
-#### If you want to use Tailwind CSS Build Process (Optional):
-
-For production optimization, you can set up Tailwind CSS with a build process:
-
-1. **Install Node.js** from [nodejs.org](https://nodejs.org/)
-
-2. **Initialize Node.js project** in your `tialo_pos` directory:
-   \`\`\`bash
-   npm init -y
-   \`\`\`
-
-3. **Install Tailwind CSS and dependencies**:
-   \`\`\`bash
-   npm install -D tailwindcss postcss autoprefixer
-   npx tailwindcss init -p
-   \`\`\`
-
-4. **Update `tailwind.config.js`**:
-   \`\`\`js
-   module.exports = {
-     content: [
-       "./**/*.php",
-       "./assets/js/**/*.js",
-     ],
-     theme: {
-       extend: {},
-     },
-     plugins: [],
-   }
-   \`\`\`
-
-5. **Create `assets/css/input.css`**:
-   \`\`\`css
-   @tailwind base;
-   @tailwind components;
-   @tailwind utilities;
-   \`\`\`
-
-6. **Build Tailwind CSS**:
-   \`\`\`bash
-   npx tailwindcss -i ./assets/css/input.css -o ./assets/css/output.css
-   \`\`\`
-
-7. **Update HTML files** - Replace the CDN link with:
-   \`\`\`html
-   <link rel="stylesheet" href="/assets/css/output.css">
-   \`\`\`
-
-8. **Add to `package.json` scripts** (Optional - for easier building):
-   \`\`\`json
-   "scripts": {
-     "build:css": "tailwindcss -i ./assets/css/input.css -o ./assets/css/output.css",
-     "watch:css": "tailwindcss -i ./assets/css/input.css -o ./assets/css/output.css --watch"
-   }
-   \`\`\`
-
-### 5. Icon Library (Font Awesome)
-
-The application uses **Font Awesome 6.4** for icons, loaded via CDN. Icons are already integrated in the HTML files.
-
-To use Font Awesome icons, use the `<i>` tag with Font Awesome classes:
-\`\`\`html
-<i class="fas fa-store"></i>
-<i class="fas fa-cash-register"></i>
-<i class="fas fa-boxes"></i>
-\`\`\`
-
-Find more icons at [Font Awesome Icons](https://fontawesome.com/icons)
-
-### 6. Login
-
-Use the default admin credentials:
-- **Email**: admin@tialo.com
-- **Password**: admin123
-
-**Important**: Change this password immediately after first login!
-
-## Project Structure
-
-\`\`\`
+## Directory Layout
+```
 tialo_pos/
 ├── assets/
 │   ├── css/
-│   │   ├── tailwind-custom.css    (Custom Tailwind utilities)
-│   │   └── [deprecated CSS files removed]
-│   ├── js/
-│   │   └── pos.js                 (POS cart functionality)
-│   └── img/
-│
+│   │   └── tailwind-custom.css        # optional utility overrides
+│   ├── img/                           # drop product/reference images here
+│   └── js/
+│       └── pos.js                     # cart + checkout interactions
 ├── includes/
-│   ├── db_connect.php             (Database connection)
-│   ├── header.php                 (Navigation bar - Tailwind)
-│   ├── footer.php                 (Footer - Tailwind)
-│   ├── auth_check.php             (Session & role verification)
-│   └── tailwind-cdn.html          (Tailwind + Font Awesome CDN)
-│
+│   ├── auth_check.php                 # session guard + role helper
+│   ├── db_connect.php                 # mysqli connection (defaults to port 3307)
+│   ├── header.php                     # legacy top nav (Font Awesome)
+│   ├── sidebar.php                    # new Fiery Red sidebar shell
+│   └── tailwind-cdn.html              # Tailwind + Font Awesome CDN snippet
 ├── modules/
-│   ├── auth/
-│   │   ├── login.php              (Login page - Tailwind)
-│   │   ├── login_process.php
-│   │   └── logout.php
-│   ├── pos/
-│   │   ├── index.php              (Product catalog - Tailwind)
-│   │   ├── checkout.php           (Checkout - Tailwind)
-│   │   ├── process_checkout.php
-│   │   ├── receipt.php            (E-receipt - Tailwind)
-│   │   └── save_cart.php
-│   ├── inventory/
-│   │   ├── index.php              (Main inventory - Tailwind)
-│   │   ├── shipments.php          (Shipments - Tailwind)
-│   │   ├── shipment_form.php      (Shipment form - Tailwind)
-│   │   ├── products.php           (Products - Tailwind)
-│   │   ├── product_form.php       (Product form - Tailwind)
-│   │   ├── process_shipment.php
-│   │   └── process_product.php
-│   ├── reports/
-│   │   ├── index.php              (Reports - Tailwind)
-│   │   ├── sales_report.php
-│   │   ├── installment_report.php
-│   │   ├── inventory_report.php
-│   │   └── export.php
-│   └── users/
-│       ├── index.php              (User management - Tailwind)
-│       ├── user_form.php          (User form - Tailwind)
-│       └── process_user.php
-│
+│   ├── auth/                          # login/logout handlers
+│   ├── inventory/                     # products + shipments + CRUD forms
+│   ├── pos/                           # catalog, checkout, complete_sale API
+│   ├── reports/                       # analytics hub + CSV exporter
+│   └── users/                         # role-filtered directory + form
 ├── scripts/
-│   ├── 01_create_database.sql
-│   └── 02_sample_data.sql
-│
-├── index.php                      (Entry point)
-├── dashboard.php                  (Admin dashboard - Tailwind)
-└── README.md                      (This file)
-\`\`\`
+│   ├── 01_create_database.sql         # schema + admin seed (update hash!)
+│   └── 02_sample_data.sql             # optional demo data
+├── reference/Final Sitemap.docx       # UX contract/spec used for redesign
+├── dashboard.php                      # admin overview screen
+├── reset_password.php                 # temporary password reset utility
+├── debug_auth.php                     # diagnostics page for auth/db issues
+├── DEPLOYMENT_CHECKLIST.md            # production hardening tasks
+├── config.example.php                 # future config scaffold (copy to config.php)
+├── package.json / pnpm-lock.yaml      # design-system artifacts from Vercel (not required to run PHP)
+└── README.md
+```
 
-## Tailwind CSS Classes Used
+## Getting Started
+### Requirements
+- PHP 8.1+ with mysqli enabled
+- MySQL 5.7+ (MariaDB works). Default port in `db_connect.php` is **3307**; change if needed.
+- Apache via XAMPP/Laragon or any server that can serve PHP.
+- Modern browser (Chrome, Edge, Firefox, Safari).
 
-### Common Utilities
-- **Spacing**: `px-4`, `py-2`, `mb-8`, `gap-6`
-- **Colors**: `bg-emerald-600`, `text-slate-900`, `border-blue-500`
-- **Sizing**: `w-full`, `h-48`, `max-w-7xl`
-- **Typography**: `text-lg`, `font-bold`, `text-slate-600`
-- **Layout**: `flex`, `grid`, `grid-cols-3`, `gap-4`
-- **Responsive**: `md:flex`, `lg:col-span-3`, `sm:grid-cols-2`
-- **Effects**: `shadow-md`, `hover:shadow-lg`, `transition`, `rounded-xl`
-- **Displays**: `flex items-center`, `justify-between`, `space-x-2`
+### Clone & Configure
+1. Copy this folder to your web root (e.g., `C:\xampp\htdocs\tialo_pos`).
+2. Duplicate `config.example.php` to `config.php` if you want central config constants (optional today, but ready for future refactors).
+3. Open `includes/db_connect.php` and update host/user/password/database/port to match your MySQL instance.
 
-### Color Scheme
-- **Primary**: Emerald (`emerald-600`) - for actions and highlights
-- **Secondary**: Slate (`slate-900`) - for text and backgrounds
-- **Accent**: Blue, Purple, Amber - for different data categories
-- **Neutral**: Gray shades for borders and dividers
+### Database
+1. Launch phpMyAdmin (or mysql CLI) and run `scripts/01_create_database.sql`.
+   - **Important**: the script ships with placeholder hashes (`$2y$10$YourHashedPasswordHere`). Generate a real bcrypt hash with `php -r "echo password_hash('admin123', PASSWORD_BCRYPT), PHP_EOL;"` and replace the placeholder before importing, or immediately run `reset_password.php` after seeding.
+2. (Optional) Seed demo data with `scripts/02_sample_data.sql` (same note about hashes applies).
+3. If you need to reset a password later, temporarily expose `reset_password.php`, change the password, then delete/rename the file for security.
 
-## User Roles & Permissions
+### Run the App
+1. Start Apache + MySQL from XAMPP.
+2. Visit `http://localhost/tialo_pos/` to reach the login page (`modules/auth/login.php`).
+3. Sign in with the admin account you provisioned in the previous step and begin exploring the modules via the sidebar.
 
-### Admin
-- Full system access
-- Inventory management
-- Reports and analytics
-- User management
-- Dashboard access
+## Modules
+### Authentication & Sessions
+- `modules/auth/login.php` and `login_process.php` handle the Inter-styled login form and bcrypt verification.
+- `includes/auth_check.php` wraps every protected page (`checkRole('Admin')` or default session guard).
+- `modules/auth/logout.php` destroys the session.
+- `reset_password.php` and `debug_auth.php` exist for administrators only—use them temporarily, then remove from production.
 
-### Cashier
-- POS operations only
-- View inventory (read-only)
-- Process transactions
-- View receipts
+### Dashboard
+- `dashboard.php` surfaces daily sales, transaction counts, low-stock alerts, and top sellers.
+- Includes recent transactions and a low-stock widget sourced directly from `products`.
+- Shares the same sidebar shell; cards use Tailwind utility classes plus Font Awesome icons for quick scanning.
 
-## Database Schema
-
-### Users Table
-- user_id (Primary Key)
-- name
-- email (Unique)
-- password (Hashed)
-- role (Admin/Cashier)
-- created_at
-
-### Shipments Table
-- shipment_id (Primary Key)
-- date_received
-- time_received
-- supplier
-- driver_name
-- total_boxes
-- created_at
-
-### Products Table
-- product_id (Primary Key)
-- shipment_id (Foreign Key)
-- name
-- category
-- quantity
-- price
-- status (Available/Sold/Out of Stock)
-- created_at
-
-### Transactions Table
-- transaction_id (Primary Key)
-- user_id (Foreign Key)
-- transaction_date
-- payment_type (Cash/GCash/Installment)
-- total_amount
-
-### Transaction Items Table
-- item_id (Primary Key)
-- transaction_id (Foreign Key)
-- product_id (Foreign Key)
-- quantity
-- subtotal
-
-### Installments Table
-- installment_id (Primary Key)
-- transaction_id (Foreign Key)
-- due_date
-- amount_due
-- balance_remaining
-- status (Paid/Unpaid)
-- created_at
-
-## Testing Checklist
-
-### Authentication
-- [ ] Login with valid credentials
-- [ ] Login with invalid credentials (should fail)
-- [ ] Logout functionality
-- [ ] Session timeout
-- [ ] Role-based access control
-
-### POS Module
-- [ ] Search products
-- [ ] Filter by category
-- [ ] Add items to cart
-- [ ] Update cart quantities
-- [ ] Remove items from cart
-- [ ] Apply discounts
-- [ ] Checkout with Cash payment
-- [ ] Checkout with GCash payment
-- [ ] Checkout with Installment payment
-- [ ] Generate receipt
-- [ ] Print receipt
+### Point of Sale
+Files: `modules/pos/index.php`, `complete_sale.php`, `checkout.php`, `receipt.php`, `save_cart.php`, `assets/js/pos.js`.
+- Catalog tab supports text search, category pills, and infinite-friendly grid cards (images currently use `/placeholder.svg`).
+- Right-hand column keeps the cart + payment rail visible; buttons toggle between Cash, GCash, and Installment.
+- Keyboard shortcuts: `F2` focuses search, `F3` Cash, `F4` GCash, `F5` Installment.
+- Discounts are validated client-side and server-side; `showDiscountError()` gives inline feedback.
+- `complete_sale.php` is the JSON endpoint: validates stock, writes `transactions` + `transaction_items`, decrements inventory, and creates installment schedules when needed.
+- Successful checkouts redirect to `receipt.php?transaction_id=...` for printable proof of sale.
 
 ### Inventory Management
-- [ ] Add shipment
-- [ ] Edit shipment
-- [ ] Delete shipment
-- [ ] Add product
-- [ ] Edit product
-- [ ] Delete product
-- [ ] Update product quantity
-- [ ] Change product status
+Files: `modules/inventory/index.php`, `product_form.php`, `shipment_form.php`, `process_product.php`, `process_shipment.php`.
+- Tabs switch between **Products** (POS-visible catalog) and **Shipments** (incoming deliveries acting as folders).
+- Search bars exist for both tabs; results use striped tables with action buttons.
+- Forms share the same design language as `modules/users/user_form.php`: label icons, red focus rings, and dual-column layouts.
+- Shipment folders capture Date & Time, Supplier, Driver, and box counts; once a folder exists, products can be tied to it.
+- Product form tracks status (`Available`, `Sold`, `Out of Stock`), price, quantity, and optional shipment folder.
 
-### Dashboard & Reports
-- [ ] View daily sales
-- [ ] View low stock alerts
-- [ ] View top-selling products
-- [ ] Generate sales reports
-- [ ] Filter reports by date range
-- [ ] Filter reports by payment type
-- [ ] View installment reports
-- [ ] Export reports to CSV
+### Reports
+Files: `modules/reports/index.php`, `sales_report.php`, `installment_report.php`, `inventory_report.php`, and `export.php`.
+- Tabs: **Sales**, **Installment**, **Inventory**; each inherits the same filter toolbar (period, payment type, staff pick list, custom date range).
+- Overview cards compute total sales, transaction counts, and average ticket; the “Top Product” callout queries `transaction_items`.
+- Installment tab lists unpaid schedules with due dates and remaining balances.
+- Inventory tab includes three reports: current stock, low-stock alert, and stock movement log (recent deductions via sales).
+- `export.php` streams CSV files on demand (daily/custom ranges & payment filters).
 
 ### User Management
-- [ ] Add new user
-- [ ] Edit user details
-- [ ] Change user role
-- [ ] Delete user
-- [ ] Prevent self-deletion
+Files: `modules/users/index.php`, `user_form.php`, `process_user.php`.
+- Filter chips (`All`, `Admins`, `Cashiers`) + search box for name/email.
+- Table includes role pills and inline Delete forms with confirmation prompts.
+- Form handles both create/update flows with hidden `action` inputs and enforces password confirmation for new accounts.
 
-## Deployment Guide
+## Data & Utilities
+- **SQL scripts**: `scripts/01_create_database.sql` (schema + default admin) and `scripts/02_sample_data.sql` (demo shipments/products). Update password hashes before use.
+- **Config scaffold**: `config.example.php` centralizes constants (APP_URL, SMTP placeholders). Use it when you refactor `db_connect.php` into dependency-injected config.
+- **Diagnostics**: `debug_auth.php` quickly verifies DB connectivity, user counts, and bcrypt hashes—handy when login fails.
+- **Docs**: `reference/Final Sitemap.docx` is the product spec; `DEPLOYMENT_CHECKLIST.md` lists hardening tasks.
+- **Prototype artifacts**: `package.json` and `pnpm-lock.yaml` originate from the Vercel/Next.js design prototype (v0). They are not required to run the PHP build but can be reused if you keep iterating on that front-end.
 
-### Local Development (XAMPP)
+## Styling & Front-end
+- Every PHP view includes `<script src="https://cdn.tailwindcss.com"></script>` (see `includes/tailwind-cdn.html`). You can swap to a compiled build later if needed; instructions from the previous README still apply if you follow the standard Tailwind CLI workflow.
+- `assets/css/tailwind-custom.css` holds custom keyframes (slide/fade) and a scrollbar theme; include it wherever you need those utilities.
+- `assets/js/pos.js` is the only global script today. It tracks cart state, clamps discounts, adds payment badges, and fires the async checkout fetch.
+- Sidebar collapse state is stored in `localStorage` (see script at the bottom of `includes/sidebar.php`). Delete storage or click the “Navigation” button to toggle.
+- Product cards currently render placeholder images. Hook them up to real uploads by storing filenames in the `products` table and pointing the `<img>` tag to `/assets/img/...`.
 
-1. Start Apache and MySQL from XAMPP Control Panel
-2. Access application at `http://localhost/tialo_pos/`
-3. Use admin credentials to login
+## Quality Checklist
+Use this as a manual QA run when shipping changes:
+- [ ] Authentication: valid login, invalid login, logout, session timeout, and Admin-only guard on `/dashboard.php`, `/modules/inventory/*`, `/modules/reports/*`, `/modules/users/*`.
+- [ ] POS Catalog: search, category pills, add/remove items, quantity changes, discount validation, keyboard shortcuts.
+- [ ] Checkout: Cash, GCash, Installment (with schedule written to `installments`), receipt generation, stock deduction.
+- [ ] Inventory: switch tabs, search shipments/products, create/edit/delete product, create/edit/delete shipment, status changes reflected in POS.
+- [ ] Reports: change period (Today/Week/Month/Custom), payment filters, staff filters, review Installment and Inventory tabs, download CSV via `export.php`.
+- [ ] Users: filter by role, search, create admin/cashier, edit details, delete (excluding self if that restriction is added), verify hashed password stored.
+- [ ] Sidebar/UI: collapse state persists, active link styling shows the current module, Fiery Red palette respected (no stray legacy colors).
 
-### Production Deployment
-
-1. **Choose Hosting**: Select a PHP hosting provider (e.g., Bluehost, SiteGround, HostGator)
-2. **Upload Files**: Use FTP/SFTP to upload all files to the server
-3. **Database Setup**: Create database and import SQL script via hosting control panel
-4. **Update Configuration**: Modify `includes/db_connect.php` with production database credentials
-5. **Set Permissions**: Ensure proper file permissions (644 for files, 755 for directories)
-6. **Enable HTTPS**: Install SSL certificate for secure transactions
-7. **Backup**: Set up regular database backups
-8. **Monitor**: Monitor system performance and error logs
-
-### Security Recommendations
-
-- [ ] Change default admin password
-- [ ] Use strong passwords for all users
-- [ ] Enable HTTPS/SSL
-- [ ] Regularly update PHP and MySQL
-- [ ] Implement regular backups
-- [ ] Use environment variables for sensitive data
-- [ ] Enable error logging (disable error display in production)
-- [ ] Implement rate limiting for login attempts
-- [ ] Use prepared statements (already implemented)
-- [ ] Validate and sanitize all inputs (already implemented)
+## Deployment
+1. Follow `DEPLOYMENT_CHECKLIST.md` (HTTPS, backups, cron for DB dumps, etc.).
+2. Move the project to your production web root and ensure file permissions are 644 (files) / 755 (directories).
+3. Create a production database, import `01_create_database.sql`, then create secure admin accounts (do **not** rely on default passwords).
+4. Update `includes/db_connect.php` (or migrate to `config.php`) with production credentials and disable verbose error output (`APP_ENV = 'production'`).
+5. Remove helper files from the server (`reset_password.php`, `debug_auth.php`, sample SQL files) once setup is complete.
+6. Enable HTTPS + HTTP/2 via your hosting panel, and point the domain to the public directory.
 
 ## Troubleshooting
+- **Database connection failed**: confirm MySQL is running, port matches `db_connect.php` (change 3307 to 3306 if you use default), and credentials are correct.
+- **Cannot log in**: run `reset_password.php` locally to set a new bcrypt password, then delete the file. Use `debug_auth.php` to confirm bcrypt hashes start with `$2y$`.
+- **Tailwind styles missing**: ensure each template includes `tailwind-cdn.html`. If you move to a compiled CSS build, update the `<link>` tags accordingly and clear the browser cache.
+- **POS checkout not working**: check browser console for fetch errors, verify `complete_sale.php` is reachable, and confirm PHP has JSON enabled. Also ensure products have sufficient stock.
+- **CSV export empty**: verify there is data in `transactions` for the selected date range/payment filter, and that your PHP install allows header downloads (no premature whitespace output).
+- **Placeholder images**: upload actual photos to `assets/img/` and store filenames in the `products` table. Update the `<img>` tag in `modules/pos/index.php` accordingly.
 
-### Database Connection Error
-- Verify MySQL is running
-- Check database credentials in `includes/db_connect.php`
-- Ensure database `tialo_posdb` exists
-
-### Login Issues
-- Clear browser cookies and cache
-- Verify user exists in database
-- Check password is correct
-
-### Cart Not Working
-- Enable JavaScript in browser
-- Check browser console for errors
-- Verify session is active
-
-### Tailwind Styles Not Loading
-- **Using CDN**: Check internet connection and CDN availability
-- **Using Build Process**: Run `npm run build:css` to regenerate output.css
-- Clear browser cache (Ctrl+Shift+Delete on Windows, Cmd+Shift+Delete on Mac)
-
-### Reports Not Showing Data
-- Verify transactions exist in database
-- Check date filters are correct
-- Ensure user has Admin role
-
-## Frontend Technologies
-
-- **Tailwind CSS 3.3+** - Utility-first CSS framework
-- **Font Awesome 6.4** - Icon library
-- **Vanilla JavaScript** - No frameworks required
-- **HTML5** - Semantic markup
-- **Responsive Design** - Mobile, tablet, and desktop friendly
-
-## Support & Maintenance
-
-For issues or feature requests, contact the development team.
-
-## License
-
-This project is proprietary software for Tialo Japan Surplus.
-
----
-
-**Version**: 2.0.0 (Tailwind CSS Redesign)  
-**Last Updated**: 2025  
-**Frontend Framework**: Tailwind CSS 3.3+  
-**Icon Library**: Font Awesome 6.4
+## Support & License
+- Proprietary project for Tialo Japan Surplus.
+- For internal questions, contact the development team or log an issue referencing the module + file + line (e.g., `modules/pos/index.php:120`).
+- Version: **2.1.0 Fiery Red Refresh** (November 2025).
