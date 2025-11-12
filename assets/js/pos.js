@@ -1,7 +1,58 @@
-// Cart management
+// POS front-end interactions
 let cart = []
+let paymentType = "Cash"
+let installmentMonths = 6
 
-// Add to cart
+const peso = new Intl.NumberFormat("en-PH", {
+  style: "currency",
+  currency: "PHP",
+  minimumFractionDigits: 2,
+})
+
+function calculateSubtotal() {
+  return cart.reduce((sum, item) => sum + item.subtotal, 0)
+}
+
+function formatPeso(value) {
+  return peso.format(value || 0)
+}
+
+function updateCart() {
+  const cartItemsDiv = document.getElementById("cartItems")
+  const cartCountSpan = document.getElementById("cartCount")
+
+  if (!cartItemsDiv || !cartCountSpan) return
+
+  if (cart.length === 0) {
+    cartItemsDiv.innerHTML = '<p class="text-slate-600 text-center py-8">Cart is empty</p>'
+    cartCountSpan.textContent = "0"
+    updateTotal()
+    return
+  }
+
+  cartItemsDiv.innerHTML = cart
+    .map(
+      (item, index) => `
+      <div class="flex items-center justify-between border border-slate-100 rounded-lg p-3">
+        <div>
+          <p class="text-sm font-semibold text-slate-900">${item.name}</p>
+          <p class="text-xs text-slate-500">${formatPeso(item.price)}</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button class="px-2 py-1 text-sm border rounded" onclick="decreaseQty(${index})">-</button>
+          <input type="number" class="w-14 text-center border rounded text-sm" value="${item.quantity}" onchange="setQty(${index}, this.value)">
+          <button class="px-2 py-1 text-sm border rounded" onclick="increaseQty(${index})">+</button>
+          <button class="text-red-600 text-sm font-semibold" onclick="removeFromCart(${index})">Remove</button>
+        </div>
+      </div>
+    `,
+    )
+    .join("")
+
+  cartCountSpan.textContent = cart.length
+  updateTotal()
+}
+
 function addToCart(productId, name, price, stock) {
   if (stock <= 0) {
     alert("Product is out of stock")
@@ -20,8 +71,8 @@ function addToCart(productId, name, price, stock) {
   } else {
     cart.push({
       product_id: productId,
-      name: name,
-      price: price,
+      name,
+      price,
       quantity: 1,
       subtotal: price,
     })
@@ -30,47 +81,12 @@ function addToCart(productId, name, price, stock) {
   updateCart()
 }
 
-// Update cart display
-function updateCart() {
-  const cartItemsDiv = document.getElementById("cartItems")
-  const cartCountSpan = document.getElementById("cartCount")
-
-  if (cart.length === 0) {
-    cartItemsDiv.innerHTML = '<p class="empty-cart">Cart is empty</p>'
-    cartCountSpan.textContent = "0"
-    updateTotal()
-    return
-  }
-
-  let html = ""
-  cart.forEach((item, index) => {
-    html += `
-            <div class="cart-item">
-                <div class="cart-item-name">${item.name}</div>
-                <div class="cart-item-price">₱${item.price.toFixed(2)}</div>
-                <div class="cart-item-controls">
-                    <button class="qty-btn" onclick="decreaseQty(${index})">-</button>
-                    <input type="number" class="qty-input" value="${item.quantity}" onchange="setQty(${index}, this.value)">
-                    <button class="qty-btn" onclick="increaseQty(${index})">+</button>
-                    <button class="remove-btn" onclick="removeFromCart(${index})">Remove</button>
-                </div>
-            </div>
-        `
-  })
-
-  cartItemsDiv.innerHTML = html
-  cartCountSpan.textContent = cart.length
-  updateTotal()
-}
-
-// Increase quantity
 function increaseQty(index) {
   cart[index].quantity++
   cart[index].subtotal = cart[index].quantity * cart[index].price
   updateCart()
 }
 
-// Decrease quantity
 function decreaseQty(index) {
   if (cart[index].quantity > 1) {
     cart[index].quantity--
@@ -79,9 +95,8 @@ function decreaseQty(index) {
   }
 }
 
-// Set quantity
 function setQty(index, qty) {
-  qty = Number.parseInt(qty)
+  qty = Number.parseInt(qty, 10)
   if (qty > 0) {
     cart[index].quantity = qty
     cart[index].subtotal = cart[index].quantity * cart[index].price
@@ -89,70 +104,170 @@ function setQty(index, qty) {
   }
 }
 
-// Remove from cart
 function removeFromCart(index) {
   cart.splice(index, 1)
   updateCart()
 }
 
-// Clear cart
 function clearCart() {
-  if (confirm("Are you sure you want to clear the cart?")) {
+  if (cart.length === 0) return
+  if (confirm("Remove all items from the cart?")) {
     cart = []
     updateCart()
   }
 }
 
-// Update total
-function updateTotal() {
-  let subtotal = 0
-  cart.forEach((item) => {
-    subtotal += item.subtotal
-  })
-
-  const discountAmount = Number.parseFloat(document.getElementById("discountAmount").value) || 0
-  const total = subtotal - discountAmount
-
-  document.getElementById("subtotal").textContent = "₱" + subtotal.toFixed(2)
-  document.getElementById("total").textContent = "₱" + total.toFixed(2)
+function showDiscountError(message) {
+  const errorEl = document.getElementById("discountError")
+  const input = document.getElementById("discountAmount")
+  if (!errorEl || !input) return
+  if (message) {
+    errorEl.textContent = message
+    errorEl.classList.remove("hidden")
+    input.classList.add("border-red-500", "ring-1", "ring-red-500/50")
+  } else {
+    errorEl.classList.add("hidden")
+    input.classList.remove("border-red-500", "ring-1", "ring-red-500/50")
+  }
 }
 
-// Proceed to checkout
-function proceedToCheckout() {
+function updateTotal() {
+  const subtotal = calculateSubtotal()
+  const discountInput = document.getElementById("discountAmount")
+  const discount = Number.parseFloat(discountInput?.value) || 0
+  const total = Math.max(subtotal - discount, 0)
+
+  const subtotalEl = document.getElementById("subtotal")
+  const totalEl = document.getElementById("total")
+  if (subtotalEl) subtotalEl.textContent = formatPeso(subtotal)
+  if (totalEl) totalEl.textContent = formatPeso(total)
+}
+
+function selectPayment(method) {
+  paymentType = method
+  const buttons = document.querySelectorAll(".payment-method-btn")
+  buttons.forEach((btn) => {
+    if (btn.dataset.method === method) {
+      btn.classList.add("border-red-600", "bg-red-50", "text-red-700", "shadow-sm")
+    } else {
+      btn.classList.remove("border-red-600", "bg-red-50", "text-red-700", "shadow-sm")
+    }
+  })
+  const installmentBlock = document.getElementById("installmentConfig")
+  if (installmentBlock) {
+    installmentBlock.classList.toggle("hidden", method !== "Installment")
+  }
+}
+
+async function proceedToCheckout() {
   if (cart.length === 0) {
     alert("Cart is empty")
     return
   }
 
-  // Save cart to session via AJAX
-  const discount = Number.parseFloat(document.getElementById("discountAmount").value) || 0
+  const discountInput = document.getElementById("discountAmount")
+  const discount = Number.parseFloat(discountInput?.value) || 0
+  const subtotal = calculateSubtotal()
 
-  fetch("save_cart.php", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      cart: cart,
-      discount: discount,
-    }),
-  }).then((response) => {
-    if (response.ok) {
-      window.location.href = "checkout.php"
+  if (discount > subtotal) {
+    showDiscountError("Discount cannot exceed subtotal.")
+    return
+  }
+  showDiscountError("")
+
+  const payload = {
+    cart,
+    discount,
+    payment_type: paymentType,
+    installment_months: paymentType === "Installment" ? installmentMonths : null,
+  }
+
+  const submitBtn = document.getElementById("completeSaleBtn")
+  const originalHtml = submitBtn?.innerHTML
+  if (submitBtn) {
+    submitBtn.disabled = true
+    submitBtn.innerHTML = `<svg class="animate-spin w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke-width="4"></circle><path class="opacity-75" d="M4 12a8 8 0 018-8" stroke-width="4"/></svg><span>Processing...</span>`
+  }
+
+  try {
+    const response = await fetch("complete_sale.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    })
+    const data = await response.json()
+    if (!response.ok || !data.success) {
+      throw new Error(data.message || "Unable to complete sale.")
+    }
+    cart = []
+    updateCart()
+    window.location.href = data.receipt_url
+  } catch (error) {
+    alert(error.message || "Something went wrong while completing the sale.")
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false
+      submitBtn.innerHTML = originalHtml
+    }
+  }
+}
+
+function setupPaymentSelection() {
+  const buttons = document.querySelectorAll(".payment-method-btn")
+  buttons.forEach((btn) => {
+    btn.addEventListener("click", () => selectPayment(btn.dataset.method))
+  })
+  selectPayment(paymentType)
+
+  const installmentSelect = document.getElementById("installmentMonths")
+  if (installmentSelect) {
+    installmentMonths = Number.parseInt(installmentSelect.value, 10) || 6
+    installmentSelect.addEventListener("change", (event) => {
+      installmentMonths = Number.parseInt(event.target.value, 10) || 6
+    })
+  }
+}
+
+function setupKeyboardShortcuts() {
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "F2") {
+      event.preventDefault()
+      document.getElementById("searchInput")?.focus()
+      return
+    }
+    if (event.key === "F3") {
+      event.preventDefault()
+      selectPayment("Cash")
+      return
+    }
+    if (event.key === "F4") {
+      event.preventDefault()
+      selectPayment("GCash")
+      return
+    }
+    if (event.key === "F5") {
+      event.preventDefault()
+      selectPayment("Installment")
     }
   })
 }
 
-// Perform search
-function performSearch() {
-  const search = document.getElementById("searchInput").value
-  window.location.href = "?search=" + encodeURIComponent(search)
+function setupDiscountInput() {
+  const discountInput = document.getElementById("discountAmount")
+  if (!discountInput) return
+  discountInput.addEventListener("input", () => {
+    const value = Number.parseFloat(discountInput.value)
+    if (Number.isNaN(value) || value < 0) {
+      discountInput.value = ""
+    }
+    showDiscountError("")
+    updateTotal()
+  })
 }
 
-// Keyboard shortcuts
-document.addEventListener("keydown", (event) => {
-  if (event.key === "F2") {
-    event.preventDefault()
-    document.getElementById("searchInput").focus()
-  }
+// Initialize interactions once DOM is ready
+document.addEventListener("DOMContentLoaded", () => {
+  setupPaymentSelection()
+  setupDiscountInput()
+  setupKeyboardShortcuts()
 })

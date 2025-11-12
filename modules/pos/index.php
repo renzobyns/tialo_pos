@@ -157,52 +157,58 @@ $categories_result = $conn->query($categories_query);
                         </div>
 
                         <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-5">
-                            <div class="space-y-3 text-sm text-slate-600">
-                                <div class="flex items-center justify-between">
-                                    <span>Subtotal</span>
-                                    <span id="subtotal" class="font-semibold text-slate-900">₱0.00</span>
-                                </div>
-                                <div>
-                                    <label for="discountAmount" class="block mb-1 font-medium">Discount</label>
-                                    <div class="flex items-center gap-2">
-                                        <input type="number" step="0.01" id="discountAmount" class="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500" placeholder="0.00">
-                                        <button onclick="clearCart()" type="button" class="px-3 py-2 text-sm text-slate-500 hover:text-red-600 transition">Clear</button>
-                                    </div>
-                                </div>
-                                <div class="flex items-center justify-between text-base font-semibold text-slate-900 pt-2 border-t border-slate-200">
-                                    <span>Total</span>
-                                    <span id="total">₱0.00</span>
-                                </div>
+                        <div class="space-y-4 text-sm text-slate-600">
+                            <div class="flex items-center justify-between">
+                                <span>Subtotal</span>
+                                <span id="subtotal" class="font-semibold text-slate-900">₱0.00</span>
                             </div>
-
                             <div>
-                                <p class="text-xs uppercase font-semibold text-slate-500 mb-3">Payment Method</p>
-                                <div class="grid grid-cols-2 gap-3">
-                                    <button class="p-3 rounded-lg border border-slate-200 hover:border-red-600 hover:bg-red-50 transition text-left">
-                                        <p class="text-sm font-semibold text-slate-900">Cash (F3)</p>
-                                        <p class="text-xs text-slate-500">Counter payment</p>
-                                    </button>
-                                    <button class="p-3 rounded-lg border border-slate-200 hover:border-red-600 hover:bg-red-50 transition text-left">
-                                        <p class="text-sm font-semibold text-slate-900">Card (F4)</p>
-                                        <p class="text-xs text-slate-500">Credit/Debit</p>
-                                    </button>
-                                    <button class="p-3 rounded-lg border border-slate-200 hover:border-red-600 hover:bg-red-50 transition text-left">
-                                        <p class="text-sm font-semibold text-slate-900">GCash (F5)</p>
-                                        <p class="text-xs text-slate-500">QR payment</p>
-                                    </button>
-                                    <button class="p-3 rounded-lg border border-slate-200 hover:border-red-600 hover:bg-red-50 transition text-left">
-                                        <p class="text-sm font-semibold text-slate-900">Split</p>
-                                        <p class="text-xs text-slate-500">Multi method</p>
-                                    </button>
+                                <div class="flex items-center justify-between mb-1">
+                                    <label for="discountAmount" class="block font-medium">Discount</label>
+                                    <button onclick="clearCart()" type="button" class="text-xs text-slate-500 hover:text-red-600 transition">Clear cart</button>
                                 </div>
+                                <input type="number" min="0" step="0.01" id="discountAmount" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500" placeholder="0.00">
+                                <p id="discountError" class="hidden text-xs text-red-600 mt-1">Discount cannot exceed subtotal.</p>
                             </div>
+                            <div class="flex items-center justify-between text-base font-semibold text-slate-900 pt-2 border-t border-slate-200">
+                                <span>Total</span>
+                                <span id="total">₱0.00</span>
+                            </div>
+                        </div>
 
-                            <button onclick="proceedToCheckout()" class="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
-                                </svg>
-                                Complete Sale (F9)
-                            </button>
+                        <div>
+                            <p class="text-xs uppercase font-semibold text-slate-500 mb-3">Payment Method</p>
+                            <div class="grid grid-cols-2 gap-3" id="paymentButtons">
+                                <button type="button" class="payment-method-btn p-3 rounded-lg border border-slate-200 hover:border-red-600 hover:bg-red-50 transition text-left" data-method="Cash">
+                                    <p class="text-sm font-semibold text-slate-900">Cash (F3)</p>
+                                    <p class="text-xs text-slate-500">Counter payment</p>
+                                </button>
+                                <button type="button" class="payment-method-btn p-3 rounded-lg border border-slate-200 hover:border-red-600 hover:bg-red-50 transition text-left" data-method="GCash">
+                                    <p class="text-sm font-semibold text-slate-900">GCash (F4)</p>
+                                    <p class="text-xs text-slate-500">QR payment</p>
+                                </button>
+                                <button type="button" class="payment-method-btn p-3 rounded-lg border border-slate-200 hover:border-red-600 hover:bg-red-50 transition text-left col-span-2" data-method="Installment">
+                                    <p class="text-sm font-semibold text-slate-900">Installment (F5)</p>
+                                    <p class="text-xs text-slate-500">Auto-schedule dues</p>
+                                </button>
+                            </div>
+                            <div id="installmentConfig" class="hidden mt-4 border border-dashed border-slate-200 rounded-lg p-3 bg-slate-50">
+                                <label for="installmentMonths" class="block text-xs font-semibold text-slate-500 mb-2">Installment term</label>
+                                <select id="installmentMonths" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 text-sm">
+                                    <option value="3">3 months</option>
+                                    <option value="6" selected>6 months</option>
+                                    <option value="12">12 months</option>
+                                </select>
+                                <p class="text-xs text-slate-500 mt-2">Monthly dues are computed automatically after completion.</p>
+                            </div>
+                        </div>
+
+                        <button id="completeSaleBtn" onclick="proceedToCheckout()" class="w-full py-3 bg-red-600 hover:bg-red-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                            </svg>
+                            <span>Complete Sale (F9)</span>
+                        </button>
                         </div>
                     </aside>
                 </div>
