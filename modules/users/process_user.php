@@ -98,7 +98,11 @@ elseif ($action === 'update') {
 }
 
 elseif ($action === 'delete') {
-    $user_id = (int)$_GET['id'];
+    $user_id = isset($_POST['user_id']) ? (int)$_POST['user_id'] : (int)($_GET['id'] ?? 0);
+    if ($user_id <= 0) {
+        header("Location: index.php?error=Invalid user id");
+        exit();
+    }
     
     // Prevent deleting the current user
     if ($user_id === $_SESSION['user_id']) {

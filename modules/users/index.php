@@ -3,11 +3,43 @@ include '../../includes/auth_check.php';
 checkRole('Admin');
 include '../../includes/db_connect.php';
 
-$tab = $_GET['tab'] ?? 'directory';
-$subtab = $_GET['subtab'] ?? 'active';
+$role_filter = $_GET['role'] ?? 'all';
+$search = trim($_GET['search'] ?? '');
 
-$users_query = "SELECT * FROM users ORDER BY user_id DESC";
-$users_result = $conn->query($users_query);
+$allowed_roles = ['Admin', 'Cashier'];
+$query = "SELECT * FROM users";
+$conditions = [];
+$params = [];
+$types = '';
+
+if (in_array($role_filter, $allowed_roles, true)) {
+    $conditions[] = "role = ?";
+    $params[] = $role_filter;
+    $types .= 's';
+}
+
+if ($search !== '') {
+    $conditions[] = "(name LIKE ? OR email LIKE ?)";
+    $like = "%{$search}%";
+    $params[] = $like;
+    $params[] = $like;
+    $types .= 'ss';
+}
+
+if (!empty($conditions)) {
+    $query .= ' WHERE ' . implode(' AND ', $conditions);
+}
+
+$query .= ' ORDER BY user_id DESC';
+
+if (!empty($params)) {
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param($types, ...$params);
+    $stmt->execute();
+    $users_result = $stmt->get_result();
+} else {
+    $users_result = $conn->query($query);
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -30,93 +62,94 @@ $users_result = $conn->query($users_query);
     <!-- Main Content -->
     <div class="flex-1 flex flex-col">
         <!-- Header -->
-        <header class="bg-white border-b border-slate-200 sticky top-0 z-40">
-            <div class="px-8 py-6">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <h1 class="text-3xl font-bold text-slate-900">User Management</h1>
-                        <p class="text-sm text-slate-600 mt-1">Manage team members and permissions</p>
-                    </div>
-                    <button class="px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition flex items-center space-x-2">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                        </svg>
-                        <span>Add User</span>
-                    </button>
+        <header class="bg-white border-b border-slate-200 sticky top-0 z-40 page-header">
+            <div class="px-6 py-4 flex flex-wrap items-center justify-between gap-4">
+                <div>
+                    <p class="text-xs uppercase tracking-wide text-slate-500">Administration</p>
+                    <h1 class="text-3xl font-bold text-slate-900">User Directory</h1>
+                    <p class="text-sm text-slate-600">Quickly filter and manage team members</p>
                 </div>
-            </div>
-            
-            <!-- Tabs -->
-            <div class="border-t border-slate-200 bg-slate-50">
-                <div class="px-8 py-3 overflow-x-auto">
-                    <div class="flex items-center gap-3 min-w-max">
-                        <a href="?tab=directory" class="inline-flex items-center px-4 py-2 text-sm font-semibold rounded-full transition whitespace-nowrap <?php echo $tab === 'directory' ? 'bg-red-600 text-white shadow border border-red-600' : 'bg-white text-slate-600 border border-transparent hover:border-slate-200 hover:text-slate-900'; ?>">
-                            Directory
-                        </a>
-                        <a href="?tab=roles" class="inline-flex items-center px-4 py-2 text-sm font-semibold rounded-full transition whitespace-nowrap <?php echo $tab === 'roles' ? 'bg-red-600 text-white shadow border border-red-600' : 'bg-white text-slate-600 border border-transparent hover:border-slate-200 hover:text-slate-900'; ?>">
-                            Roles & Permissions
-                        </a>
-                        <a href="?tab=logs" class="inline-flex items-center px-4 py-2 text-sm font-semibold rounded-full transition whitespace-nowrap <?php echo $tab === 'logs' ? 'bg-red-600 text-white shadow border border-red-600' : 'bg-white text-slate-600 border border-transparent hover:border-slate-200 hover:text-slate-900'; ?>">
-                            Activity Logs
-                        </a>
-                    </div>
-                </div>
+                <a href="user_form.php" class="inline-flex items-center px-5 py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-white font-semibold transition">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    Add User
+                </a>
             </div>
         </header>
         
-        <!-- Content -->
-        <main class="flex-1 px-8 py-6">
-            <?php if ($tab === 'directory'): ?>
-                <div class="space-y-6">
-                    <!-- Search and Filter -->
-                    <div class="bg-white rounded-lg border border-slate-200 p-4">
-                        <input type="text" placeholder="Search users..." class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
+        <main class="flex-1 px-6 py-6 space-y-6">
+            <div class="bg-white rounded-xl border border-slate-200 p-4 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <form class="flex-1" method="GET">
+                    <div class="flex items-center gap-3">
+                        <input type="text" name="search" value="<?php echo htmlspecialchars($search); ?>" placeholder="Search by name or email" class="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
+                        <button type="submit" class="px-4 py-2 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-700 transition">Search</button>
+                        <?php if ($search !== ''): ?>
+                            <a href="index.php?role=<?php echo urlencode($role_filter); ?>" class="text-sm text-slate-500 hover:text-red-600">Reset</a>
+                        <?php endif; ?>
                     </div>
-                    
-                    <!-- Users Table -->
-                    <div class="bg-white rounded-lg border border-slate-200 overflow-hidden">
-                        <table class="w-full">
-                            <thead>
-                                <tr class="bg-slate-50 border-b border-slate-200">
-                                    <th class="px-6 py-4 text-left text-sm font-semibold text-slate-900">Name</th>
-                                    <th class="px-6 py-4 text-left text-sm font-semibold text-slate-900">Email</th>
-                                    <th class="px-6 py-4 text-left text-sm font-semibold text-slate-900">Role</th>
-                                    <th class="px-6 py-4 text-left text-sm font-semibold text-slate-900">Status</th>
-                                    <th class="px-6 py-4 text-left text-sm font-semibold text-slate-900">Actions</th>
+                    <input type="hidden" name="role" value="<?php echo htmlspecialchars($role_filter); ?>">
+                </form>
+                <div class="flex flex-wrap items-center gap-3">
+                    <?php
+                    $filter_links = [
+                        'all' => 'All Users',
+                        'Admin' => 'Admins',
+                        'Cashier' => 'Cashiers',
+                    ];
+                    foreach ($filter_links as $value => $label):
+                        $active = $role_filter === $value || ($value === 'all' && !in_array($role_filter, $allowed_roles, true));
+                    ?>
+                        <a href="?role=<?php echo urlencode($value); ?>&search=<?php echo urlencode($search); ?>" class="px-4 py-2 rounded-full border text-sm font-semibold transition <?php echo $active ? 'bg-red-600 border-red-600 text-white shadow' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'; ?>">
+                            <?php echo $label; ?>
+                        </a>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                <table class="w-full">
+                    <thead>
+                        <tr class="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase">
+                            <th class="px-6 py-3 text-left">Name</th>
+                            <th class="px-6 py-3 text-left">Email</th>
+                            <th class="px-6 py-3 text-left">Role</th>
+                            <th class="px-6 py-3 text-left">Status</th>
+                            <th class="px-6 py-3 text-left">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        <?php if ($users_result && $users_result->num_rows > 0): ?>
+                            <?php while ($user = $users_result->fetch_assoc()): ?>
+                                <tr class="hover:bg-slate-50">
+                                    <td class="px-6 py-4 text-sm font-semibold text-slate-900"><?php echo htmlspecialchars($user['name']); ?></td>
+                                    <td class="px-6 py-4 text-sm text-slate-600"><?php echo htmlspecialchars($user['email']); ?></td>
+                                    <td class="px-6 py-4 text-sm">
+                                        <span class="px-3 py-1 rounded-full text-xs font-semibold <?php echo $user['role'] === 'Admin' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'; ?>">
+                                            <?php echo htmlspecialchars($user['role']); ?>
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 text-sm">
+                                        <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold">Active</span>
+                                    </td>
+                                    <td class="px-6 py-4 text-sm space-x-3">
+                                        <a href="user_form.php?id=<?php echo $user['user_id']; ?>" class="text-blue-600 hover:text-blue-800 font-semibold">Edit</a>
+                                        <form method="POST" action="process_user.php" class="inline" onsubmit="return confirm('Delete this user?');">
+                                            <input type="hidden" name="action" value="delete">
+                                            <input type="hidden" name="user_id" value="<?php echo $user['user_id']; ?>">
+                                            <button type="submit" class="text-red-600 hover:text-red-800 font-semibold">Delete</button>
+                                        </form>
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody class="divide-y divide-slate-200">
-                                <?php while ($user = $users_result->fetch_assoc()): ?>
-                                    <tr class="hover:bg-slate-50 transition">
-                                        <td class="px-6 py-4 text-sm font-medium text-slate-900"><?php echo htmlspecialchars($user['name']); ?></td>
-                                        <td class="px-6 py-4 text-sm text-slate-600"><?php echo htmlspecialchars($user['email']); ?></td>
-                                        <td class="px-6 py-4 text-sm">
-                                            <span class="px-3 py-1 <?php echo $user['role'] === 'Admin' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'; ?> rounded-full text-xs font-semibold">
-                                                <?php echo htmlspecialchars($user['role']); ?>
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4 text-sm"><span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold">Active</span></td>
-                                        <td class="px-6 py-4 text-sm space-x-2">
-                                            <button class="text-blue-600 hover:text-blue-800">Edit</button>
-                                            <button class="text-red-600 hover:text-red-800">Delete</button>
-                                        </td>
-                                    </tr>
-                                <?php endwhile; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            <?php elseif ($tab === 'roles'): ?>
-                <div class="bg-white rounded-lg border border-slate-200 p-6">
-                    <h2 class="text-xl font-bold mb-6">Roles & Permissions</h2>
-                    <p class="text-slate-600">Manage user roles and their permissions</p>
-                </div>
-            <?php elseif ($tab === 'logs'): ?>
-                <div class="bg-white rounded-lg border border-slate-200 p-6">
-                    <h2 class="text-xl font-bold mb-6">Activity Logs</h2>
-                    <p class="text-slate-600">View user activity and security logs</p>
-                </div>
-            <?php endif; ?>
+                            <?php endwhile; ?>
+                        <?php else: ?>
+                            <tr>
+                                <td colspan="5" class="px-6 py-8 text-center text-sm text-slate-500">No users found for the selected filters.</td>
+                            </tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
         </main>
     </div>
 </body>
