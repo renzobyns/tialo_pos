@@ -5,11 +5,21 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 // Determine current page for active state
-$current_page = basename($_SERVER['PHP_SELF']);
 $request_uri = $_SERVER['REQUEST_URI'];
+$current_path = trim(parse_url($request_uri, PHP_URL_PATH), '/');
 
-function is_active($page, $uri) {
-    return strpos($uri, $page) !== false;
+function is_active_route($needle, $current_path) {
+    $needle = trim($needle, '/');
+    if ($needle === '') {
+        return $current_path === '' || $current_path === 'index.php';
+    }
+    if ($needle === 'dashboard') {
+        return $current_path === 'dashboard.php' || $current_path === 'dashboard';
+    }
+    if ($current_path === $needle) {
+        return true;
+    }
+    return strpos($current_path, $needle . '/') === 0;
 }
 
 $nav_items = [];
@@ -17,17 +27,17 @@ $nav_items = [];
 // Admin navigation
 if ($_SESSION['role'] === 'Admin') {
     $nav_items = [
-        ['label' => 'Dashboard', 'path' => strpos($request_uri, 'modules') !== false ? '../../dashboard.php' : 'dashboard.php', 'icon' => 'dashboard', 'active' => is_active('dashboard', $request_uri)],
-        ['label' => 'POS', 'path' => strpos($request_uri, 'modules') !== false ? '../../modules/pos/index.php' : 'modules/pos/index.php', 'icon' => 'pos', 'active' => is_active('pos', $request_uri)],
-        ['label' => 'Inventory', 'path' => strpos($request_uri, 'modules') !== false ? '../../modules/inventory/index.php' : 'modules/inventory/index.php', 'icon' => 'inventory', 'active' => is_active('inventory', $request_uri)],
-        ['label' => 'Reports', 'path' => strpos($request_uri, 'modules') !== false ? '../../modules/reports/index.php' : 'modules/reports/index.php', 'icon' => 'reports', 'active' => is_active('reports', $request_uri)],
-        ['label' => 'Users', 'path' => strpos($request_uri, 'modules') !== false ? '../../modules/users/index.php' : 'modules/users/index.php', 'icon' => 'users', 'active' => is_active('users', $request_uri)],
+        ['label' => 'Dashboard', 'path' => strpos($request_uri, 'modules') !== false ? '../../dashboard.php' : 'dashboard.php', 'icon' => 'dashboard', 'active' => is_active_route('dashboard', $current_path)],
+        ['label' => 'POS', 'path' => strpos($request_uri, 'modules') !== false ? '../../modules/pos/index.php' : 'modules/pos/index.php', 'icon' => 'pos', 'active' => is_active_route('modules/pos', $current_path)],
+        ['label' => 'Inventory', 'path' => strpos($request_uri, 'modules') !== false ? '../../modules/inventory/index.php' : 'modules/inventory/index.php', 'icon' => 'inventory', 'active' => is_active_route('modules/inventory', $current_path)],
+        ['label' => 'Reports', 'path' => strpos($request_uri, 'modules') !== false ? '../../modules/reports/index.php' : 'modules/reports/index.php', 'icon' => 'reports', 'active' => is_active_route('modules/reports', $current_path)],
+        ['label' => 'Users', 'path' => strpos($request_uri, 'modules') !== false ? '../../modules/users/index.php' : 'modules/users/index.php', 'icon' => 'users', 'active' => is_active_route('modules/users', $current_path)],
         ['label' => 'Settings', 'path' => '#', 'icon' => 'settings', 'active' => false],
     ];
 } else {
     // Cashier navigation
     $nav_items = [
-        ['label' => 'POS', 'path' => strpos($request_uri, 'modules') !== false ? '../../modules/pos/index.php' : 'modules/pos/index.php', 'icon' => 'pos', 'active' => is_active('pos', $request_uri)],
+        ['label' => 'POS', 'path' => strpos($request_uri, 'modules') !== false ? '../../modules/pos/index.php' : 'modules/pos/index.php', 'icon' => 'pos', 'active' => is_active_route('modules/pos', $current_path)],
     ];
 }
 ?>
@@ -64,6 +74,27 @@ if ($_SESSION['role'] === 'Admin') {
     overflow-y: auto;
     border-right: 1px solid var(--color-border);
     z-index: 50;
+    transition: width 0.2s ease;
+  }
+
+  .sidebar-collapse-btn {
+    width: 100%;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+  }
+
+  .sidebar-collapse-btn svg {
+    width: 18px;
+    height: 18px;
   }
 
   .sidebar-brand {
@@ -213,29 +244,53 @@ if ($_SESSION['role'] === 'Admin') {
     display: flex;
     flex-direction: column;
     width: calc(100% - 240px);
-  }
-
-  .app-topbar {
-    background-color: var(--color-surface);
-    border-bottom: 1px solid var(--color-border);
-    padding: 16px 28px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    height: 64px;
-  }
-
-  .app-topbar-title h1 {
-    margin: 0;
-    font-size: 24px;
-    font-weight: 600;
-    color: var(--color-text-strong);
+    transition: margin-left 0.2s ease, width 0.2s ease;
   }
 
   .app-content {
     flex: 1;
-    padding: 32px 40px;
+    padding: 24px 32px;
     width: 100%;
+  }
+
+  .page-header {
+    padding: 16px 32px;
+  }
+
+  body.sidebar-collapsed .sidebar {
+    width: 72px;
+  }
+
+  body.sidebar-collapsed .sidebar-brand {
+    padding: 18px 12px;
+  }
+
+  body.sidebar-collapsed .sidebar-collapse-btn span,
+  body.sidebar-collapsed .sidebar-brand-text,
+  body.sidebar-collapsed .sidebar-nav-label,
+  body.sidebar-collapsed .sidebar-user-info,
+  body.sidebar-collapsed .sidebar-logout span {
+    opacity: 0;
+    pointer-events: none;
+    position: absolute;
+    left: -9999px;
+  }
+
+  body.sidebar-collapsed .sidebar-nav-item {
+    justify-content: center;
+  }
+
+  body.sidebar-collapsed .sidebar-nav-icon {
+    margin-right: 0;
+  }
+
+  body.sidebar-collapsed .sidebar-user {
+    justify-content: center;
+  }
+
+  body.sidebar-collapsed .app-container {
+    margin-left: 72px;
+    width: calc(100% - 72px);
   }
 
   @media (max-width: 768px) {
@@ -268,6 +323,12 @@ if ($_SESSION['role'] === 'Admin') {
 </style>
 
 <aside class="sidebar">
+  <button class="sidebar-collapse-btn" id="sidebarToggle" type="button">
+    <span>Navigation</span>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M4 12h16M4 6h16M4 18h16"/>
+    </svg>
+  </button>
   <!-- Brand -->
   <div class="sidebar-brand">
     <div class="sidebar-brand-circle">T</div>
@@ -328,9 +389,24 @@ if ($_SESSION['role'] === 'Admin') {
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px; margin-right: 8px;">
         <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5m0 0l-5-5M21 12H9"/>
       </svg>
-      Logout
+      <span>Logout</span>
     </a>
   </div>
 </aside>
+<script>
+  (function () {
+    const toggle = document.getElementById('sidebarToggle');
+    const body = document.body;
+    if (localStorage.getItem('sidebar-collapsed') === 'true') {
+      body.classList.add('sidebar-collapsed');
+    }
+    if (toggle) {
+      toggle.addEventListener('click', function () {
+        body.classList.toggle('sidebar-collapsed');
+        localStorage.setItem('sidebar-collapsed', body.classList.contains('sidebar-collapsed'));
+      });
+    }
+  })();
+</script>
 
 <div class="app-container">

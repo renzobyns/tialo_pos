@@ -42,38 +42,22 @@ $categories_result = $conn->query($categories_query);
     <?php include '../../includes/sidebar.php'; ?>
     
     <div class="flex-1 flex flex-col">
-        <header class="bg-white border-b border-slate-200 sticky top-0 z-40">
-            <div class="px-8 py-6">
-                <div class="flex items-center justify-between">
+        <header class="bg-white border-b border-slate-200 sticky top-0 z-40 page-header">
+            <div class="px-6">
+                <div class="flex flex-wrap items-center justify-between gap-4">
                     <div>
+                        <p class="text-xs uppercase tracking-wide text-slate-500">Sales Console</p>
                         <h1 class="text-3xl font-bold text-slate-900">Point of Sale</h1>
-                        <p class="text-sm text-slate-600 mt-1">Manage sales and checkout transactions</p>
+                        <p class="text-sm text-slate-600">Manage sales and checkout transactions</p>
                     </div>
-                    <div class="flex items-center space-x-4">
-                        <button class="p-2 hover:bg-slate-100 rounded-lg transition">
-                            <svg class="w-6 h-6 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                            </svg>
-                        </button>
-                        <button class="p-2 hover:bg-slate-100 rounded-lg transition">
-                            <svg class="w-6 h-6 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="border-t border-slate-200 bg-slate-50">
-                <div class="px-8 py-3 overflow-x-auto">
-                    <div class="flex items-center gap-3 min-w-max">
-                        <a href="?tab=catalog" class="inline-flex items-center px-4 py-2 text-sm font-semibold rounded-full transition whitespace-nowrap <?php echo $tab === 'catalog' ? 'bg-red-600 text-white shadow border border-red-600' : 'bg-white text-slate-600 border border-transparent hover:border-slate-200 hover:text-slate-900'; ?>">
+                    <div class="flex items-center gap-3">
+                        <a href="?tab=catalog" class="inline-flex items-center px-4 py-2 text-sm font-semibold rounded-full transition whitespace-nowrap <?php echo $tab === 'catalog' ? 'bg-red-600 text-white shadow border border-red-600' : 'bg-white text-slate-600 border border-slate-200 hover:text-slate-900'; ?>">
                             Catalog
                         </a>
-                        <a href="?tab=receipts" class="inline-flex items-center px-4 py-2 text-sm font-semibold rounded-full transition whitespace-nowrap <?php echo $tab === 'receipts' ? 'bg-red-600 text-white shadow border border-red-600' : 'bg-white text-slate-600 border border-transparent hover:border-slate-200 hover:text-slate-900'; ?>">
+                        <a href="?tab=receipts" class="inline-flex items-center px-4 py-2 text-sm font-semibold rounded-full transition whitespace-nowrap <?php echo $tab === 'receipts' ? 'bg-red-600 text-white shadow border border-red-600' : 'bg-white text-slate-600 border border-slate-200 hover:text-slate-900'; ?>">
                             Receipts
                         </a>
-                        <a href="?tab=returns" class="inline-flex items-center px-4 py-2 text-sm font-semibold rounded-full transition whitespace-nowrap <?php echo $tab === 'returns' ? 'bg-red-600 text-white shadow border border-red-600' : 'bg-white text-slate-600 border border-transparent hover-border-slate-200 hover:text-slate-900'; ?>">
+                        <a href="?tab=returns" class="inline-flex items-center px-4 py-2 text-sm font-semibold rounded-full transition whitespace-nowrap <?php echo $tab === 'returns' ? 'bg-red-600 text-white shadow border border-red-600' : 'bg-white text-slate-600 border border-slate-200 hover:text-slate-900'; ?>">
                             Returns
                         </a>
                     </div>
@@ -81,7 +65,7 @@ $categories_result = $conn->query($categories_query);
             </div>
         </header>
         
-        <main class="flex-1 px-8 py-6">
+        <main class="flex-1 px-6 py-4">
             <?php if ($tab === 'catalog'): ?>
                 <div class="flex flex-col lg:flex-row gap-6">
                     <div class="flex-1 space-y-6">
@@ -237,6 +221,6 @@ $categories_result = $conn->query($categories_query);
     </div>
 </div>
 
-    <script src="../../assets/js/pos.js"></script>
+        <script src="../../assets/js/pos.js"></script>
 </body>
 </html>
