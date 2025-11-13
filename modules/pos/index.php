@@ -5,6 +5,20 @@ include '../../includes/db_connect.php';
 $category = $_GET['category'] ?? 'All';
 $search = $_GET['search'] ?? '';
 $tab = $_GET['tab'] ?? 'catalog';
+$allowed_tabs = ['catalog', 'history'];
+if (!in_array($tab, $allowed_tabs, true)) {
+    $tab = 'catalog';
+}
+$history_ranges = [
+    'today' => 'Today',
+    'week' => 'This Week',
+    'month' => 'This Month',
+    'all' => 'All Time'
+];
+$selected_range = $_GET['range'] ?? 'today';
+if (!array_key_exists($selected_range, $history_ranges)) {
+    $selected_range = 'today';
+}
 
 $query = "SELECT * FROM products WHERE status = 'Available'";
 
@@ -23,6 +37,32 @@ $products_result = $conn->query($query);
 
 $categories_query = "SELECT DISTINCT category FROM products WHERE status = 'Available' ORDER BY category";
 $categories_result = $conn->query($categories_query);
+
+$history_result = null;
+if ($tab === 'history') {
+    $range_filters = [
+        'today' => "DATE(t.transaction_date) = CURDATE()",
+        'week' => "YEARWEEK(t.transaction_date, 1) = YEARWEEK(CURDATE(), 1)",
+        'month' => "DATE_FORMAT(t.transaction_date, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m')",
+        'all' => "1=1"
+    ];
+    $where_clause = $range_filters[$selected_range] ?? $range_filters['today'];
+    $history_query = "
+        SELECT 
+            t.transaction_id,
+            t.transaction_date,
+            t.payment_type,
+            t.total_amount,
+            u.name AS cashier_name,
+            (SELECT COUNT(*) FROM transaction_items ti WHERE ti.transaction_id = t.transaction_id) AS item_count
+        FROM transactions t
+        LEFT JOIN users u ON u.user_id = t.user_id
+        WHERE {$where_clause}
+        ORDER BY t.transaction_date DESC
+        LIMIT 50
+    ";
+    $history_result = $conn->query($history_query);
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -54,11 +94,8 @@ $categories_result = $conn->query($categories_query);
                         <a href="?tab=catalog" class="inline-flex items-center px-4 py-2 text-sm font-semibold rounded-full transition whitespace-nowrap <?php echo $tab === 'catalog' ? 'bg-red-600 text-white shadow border border-red-600' : 'bg-white text-slate-600 border border-slate-200 hover:text-slate-900'; ?>">
                             Catalog
                         </a>
-                        <a href="?tab=receipts" class="inline-flex items-center px-4 py-2 text-sm font-semibold rounded-full transition whitespace-nowrap <?php echo $tab === 'receipts' ? 'bg-red-600 text-white shadow border border-red-600' : 'bg-white text-slate-600 border border-slate-200 hover:text-slate-900'; ?>">
-                            Receipts
-                        </a>
-                        <a href="?tab=returns" class="inline-flex items-center px-4 py-2 text-sm font-semibold rounded-full transition whitespace-nowrap <?php echo $tab === 'returns' ? 'bg-red-600 text-white shadow border border-red-600' : 'bg-white text-slate-600 border border-slate-200 hover:text-slate-900'; ?>">
-                            Returns
+                        <a href="?tab=history" class="inline-flex items-center px-4 py-2 text-sm font-semibold rounded-full transition whitespace-nowrap <?php echo $tab === 'history' ? 'bg-red-600 text-white shadow border border-red-600' : 'bg-white text-slate-600 border border-slate-200 hover:text-slate-900'; ?>">
+                            History
                         </a>
                     </div>
                 </div>
@@ -212,15 +249,72 @@ $categories_result = $conn->query($categories_query);
                         </div>
                     </aside>
                 </div>
-            <?php elseif ($tab === 'receipts'): ?>
+            <?php elseif ($tab === 'history'): ?>
                 <div class="bg-white rounded-lg border border-slate-200 p-6">
-                    <h2 class="text-xl font-bold mb-6">Transaction Receipts</h2>
-                    <p class="text-slate-600">Recent receipts will appear here</p>
-                </div>
-            <?php elseif ($tab === 'returns'): ?>
-                <div class="bg-white rounded-lg border border-slate-200 p-6">
-                    <h2 class="text-xl font-bold mb-6">Returns & Adjustments</h2>
-                    <p class="text-slate-600">Process item returns and exchanges.</p>
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+                        <div>
+                            <p class="text-xs uppercase tracking-wide text-slate-500">Transaction History</p>
+                            <h2 class="text-2xl font-bold text-slate-900">Receipts & Daily Sales</h2>
+                            <p class="text-sm text-slate-500">Review completed sales and reopen digital receipts.</p>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <?php foreach ($history_ranges as $key => $label): ?>
+                                <a href="?tab=history&range=<?php echo $key; ?>"
+                                   class="px-3 py-2 rounded-full text-xs font-semibold border transition <?php echo $selected_range === $key ? 'bg-red-600 text-white border-red-600 shadow' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'; ?>">
+                                    <?php echo htmlspecialchars($label); ?>
+                                </a>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+
+                    <?php if ($history_result && $history_result->num_rows > 0): ?>
+                        <div class="overflow-x-auto -mx-6 px-6">
+                            <table class="min-w-full divide-y divide-slate-200">
+                                <thead>
+                                    <tr class="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                                        <th class="py-3">Receipt #</th>
+                                        <th class="py-3">Date & Time</th>
+                                        <th class="py-3">Cashier</th>
+                                        <th class="py-3">Items</th>
+                                        <th class="py-3">Payment</th>
+                                        <th class="py-3 text-right">Total</th>
+                                        <th class="py-3 text-right">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100">
+                                    <?php while ($history = $history_result->fetch_assoc()): ?>
+                                        <tr class="hover:bg-slate-50">
+                                            <td class="py-4 font-semibold text-slate-900">#<?php echo str_pad($history['transaction_id'], 6, '0', STR_PAD_LEFT); ?></td>
+                                            <td class="py-4 text-sm text-slate-600"><?php echo date('M d, Y \\a\\t h:i A', strtotime($history['transaction_date'])); ?></td>
+                                            <td class="py-4 text-sm text-slate-600"><?php echo htmlspecialchars($history['cashier_name'] ?? '—'); ?></td>
+                                            <td class="py-4 text-sm text-slate-600"><?php echo (int) ($history['item_count'] ?? 0); ?></td>
+                                            <td class="py-4">
+                                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold <?php echo $history['payment_type'] === 'Installment' ? 'bg-amber-100 text-amber-700' : ($history['payment_type'] === 'GCash' ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'); ?>">
+                                                    <?php echo htmlspecialchars($history['payment_type']); ?>
+                                                </span>
+                                            </td>
+                                            <td class="py-4 text-right font-semibold text-slate-900">₱<?php echo number_format($history['total_amount'], 2); ?></td>
+                                            <td class="py-4 text-right">
+                                                <a href="receipt.php?transaction_id=<?php echo (int) $history['transaction_id']; ?>"
+                                                   class="inline-flex items-center gap-1 px-3 py-2 text-xs font-semibold rounded-full border border-slate-200 text-slate-700 hover:text-red-600 hover:border-red-200 transition">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12H9m12 0A9 9 0 11.999 12a9 9 0 0120.001 0z" />
+                                                    </svg>
+                                                    View Receipt
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    <?php endwhile; ?>
+                                </tbody>
+                            </table>
+                            <p class="text-xs text-slate-500 mt-4">Showing up to the 50 most recent transactions for the selected range.</p>
+                        </div>
+                    <?php else: ?>
+                        <div class="text-center py-12 text-slate-500">
+                            <p class="text-sm font-semibold">No transactions found for this range.</p>
+                            <p class="text-xs mt-1">Complete a sale and it will appear here instantly.</p>
+                        </div>
+                    <?php endif; ?>
                 </div>
             <?php endif; ?>
         </main>

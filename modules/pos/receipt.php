@@ -31,6 +31,16 @@ $items_stmt = $conn->prepare($items_query);
 $items_stmt->bind_param("i", $transaction_id);
 $items_stmt->execute();
 $items_result = $items_stmt->get_result();
+$items = [];
+$items_total_quantity = 0;
+while ($row = $items_result->fetch_assoc()) {
+    $qty = (int) $row['quantity'];
+    $items_total_quantity += $qty;
+    $unit_price = isset($row['price']) ? (float) $row['price'] : (float) $row['subtotal'] / max($qty, 1);
+    $row['unit_price'] = $unit_price;
+    $items[] = $row;
+}
+$total_line_items = count($items);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -39,95 +49,170 @@ $items_result = $items_stmt->get_result();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Receipt - Tialo Japan Surplus</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+        .receipt-shell {
+            border-radius: 1.5rem;
+            border: 1px solid #e2e8f0;
+        }
+        .receipt-gradient {
+            background: linear-gradient(90deg, #9D0208, #D00000, #E85D04);
+        }
+        .receipt-table th,
+        .receipt-table td {
+            font-size: 0.9rem;
+        }
+        @media print {
+            body {
+                background: #fff;
+                color: #111;
+            }
+            main {
+                max-width: 80mm;
+                padding: 0;
+                margin: 0 auto;
+            }
+            .print\:hidden {
+                display: none !important;
+            }
+            .receipt-shell {
+                border-radius: 0;
+                border: 1px solid #111;
+                box-shadow: none;
+            }
+            .receipt-gradient {
+                background: transparent !important;
+                color: #111 !important;
+                border-bottom: 1px dashed #aaa;
+                padding: 16px !important;
+                text-align: center;
+            }
+            .receipt-gradient p,
+            .receipt-gradient div {
+                color: inherit !important;
+            }
+            .receipt-table thead {
+                background: transparent !important;
+            }
+            .receipt-table th {
+                border-bottom: 1px dashed #ccc;
+            }
+            .receipt-table td {
+                border-bottom: 1px dotted #e5e7eb;
+            }
+            .receipt-summary {
+                border: 1px dashed #bbb !important;
+                background: transparent !important;
+            }
+            .print\:shadow-none {
+                box-shadow: none !important;
+            }
+            .print\:border-0 {
+                border: 0 !important;
+            }
+        }
+    </style>
 </head>
-<body class="bg-slate-50">
-    <?php include '../../includes/header.php'; ?>
-    
-    <main class="max-w-2xl mx-auto px-4 py-8">
-        <!-- Receipt Container -->
-        <div id="receipt" class="bg-white rounded-lg shadow-2xl p-12 max-w-xl mx-auto">
-            <!-- Header -->
-            <div class="text-center border-b-2 border-slate-200 pb-6 mb-6">
-                <h1 class="text-3xl font-bold text-slate-900 mb-2">
-                    <i class="fas fa-shopping-bag text-emerald-600 mr-2"></i>Tialo Japan Surplus
-                </h1>
-                <p class="text-slate-600 font-semibold">Official Receipt</p>
+<body class="bg-slate-50 text-slate-900">
+    <main class="max-w-4xl mx-auto px-4 sm:px-8 py-10">
+        <header class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 print:hidden">
+            <div>
+                <p class="text-xs uppercase tracking-[0.2em] text-slate-500">Digital Receipt</p>
+                <h1 class="text-3xl font-bold text-slate-900">Sale #<?php echo str_pad($transaction_id, 6, '0', STR_PAD_LEFT); ?></h1>
+                <p class="text-sm text-slate-500">Review or print the official receipt for this transaction.</p>
             </div>
-            
-            <!-- Receipt Info -->
-            <div class="space-y-2 text-sm text-slate-600 mb-6 pb-6 border-b border-slate-200">
-                <div class="flex justify-between">
-                    <span class="font-semibold">Receipt #:</span>
-                    <span><?php echo str_pad($transaction_id, 6, '0', STR_PAD_LEFT); ?></span>
+            <div class="flex flex-wrap gap-3">
+                <button onclick="window.print()" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-600 text-white text-sm font-semibold shadow-sm hover:bg-red-700 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 9V2h12v7M6 9H4a2 2 0 00-2 2v6h4m14 0h-4m4 0v-6a2 2 0 00-2-2h-2m0 0H6m12 0v10H6V9" />
+                    </svg>
+                    Print Receipt
+                </button>
+                <a href="index.php" class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-slate-200 text-sm font-semibold text-slate-700 hover:border-red-200 hover:text-red-600 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    New Transaction
+                </a>
+            </div>
+        </header>
+
+        <section id="receipt" class="mt-8 bg-white receipt-shell shadow-xl print:shadow-none overflow-hidden">
+            <div class="receipt-gradient px-8 py-6 text-white flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                    <p class="text-sm font-semibold tracking-wide uppercase text-white/80">Tialo Japan Surplus</p>
+                    <p class="text-xs text-white/70">Official Receipt · Generated <?php echo date('M d, Y \\a\\t h:i A', strtotime($transaction['transaction_date'])); ?></p>
                 </div>
-                <div class="flex justify-between">
-                    <span class="font-semibold">Date & Time:</span>
-                    <span><?php echo date('M d, Y \a\t H:i', strtotime($transaction['transaction_date'])); ?></span>
-                </div>
-                <div class="flex justify-between">
-                    <span class="font-semibold">Cashier:</span>
-                    <span><?php echo htmlspecialchars($transaction['cashier_name']); ?></span>
-                </div>
-                <div class="flex justify-between">
-                    <span class="font-semibold">Payment Method:</span>
-                    <span><?php echo htmlspecialchars($transaction['payment_type']); ?></span>
+                <div class="text-right">
+                    <p class="text-xs uppercase text-white/70">Receipt #</p>
+                    <p class="text-2xl font-bold tracking-widest"><?php echo str_pad($transaction_id, 6, '0', STR_PAD_LEFT); ?></p>
                 </div>
             </div>
-            
-            <!-- Items Table -->
-            <div class="mb-6">
-                <table class="w-full text-sm">
-                    <thead>
-                        <tr class="border-b-2 border-slate-300">
-                            <th class="text-left py-2 font-bold text-slate-900">Item</th>
-                            <th class="text-center py-2 font-bold text-slate-900">Qty</th>
-                            <th class="text-right py-2 font-bold text-slate-900">Price</th>
-                            <th class="text-right py-2 font-bold text-slate-900">Total</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php while ($item = $items_result->fetch_assoc()): ?>
-                            <tr class="border-b border-slate-200">
-                                <td class="py-2 text-slate-900"><?php echo htmlspecialchars($item['name']); ?></td>
-                                <td class="text-center py-2 text-slate-600"><?php echo $item['quantity']; ?></td>
-                                <td class="text-right py-2 text-slate-600">₱<?php echo number_format($item['price'], 2); ?></td>
-                                <td class="text-right py-2 font-semibold text-slate-900">₱<?php echo number_format($item['subtotal'], 2); ?></td>
+
+            <div class="p-8 space-y-8">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-sm">
+                    <div>
+                        <p class="text-xs uppercase tracking-wide text-slate-500 mb-1">Date & Time</p>
+                        <p class="font-semibold text-slate-900"><?php echo date('M d, Y \\a\\t h:i A', strtotime($transaction['transaction_date'])); ?></p>
+                    </div>
+                    <div>
+                        <p class="text-xs uppercase tracking-wide text-slate-500 mb-1">Cashier</p>
+                        <p class="font-semibold text-slate-900"><?php echo htmlspecialchars($transaction['cashier_name']); ?></p>
+                    </div>
+                    <div>
+                        <p class="text-xs uppercase tracking-wide text-slate-500 mb-1">Payment Method</p>
+                        <p class="inline-flex items-center gap-2 font-semibold">
+                            <span class="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold <?php echo $transaction['payment_type'] === 'Installment' ? 'bg-amber-100 text-amber-700' : ($transaction['payment_type'] === 'GCash' ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'); ?>">
+                                <?php echo htmlspecialchars($transaction['payment_type']); ?>
+                            </span>
+                        </p>
+                    </div>
+                    <div>
+                        <p class="text-xs uppercase tracking-wide text-slate-500 mb-1">Items in Cart</p>
+                        <p class="font-semibold text-slate-900"><?php echo $items_total_quantity; ?> total / <?php echo $total_line_items; ?> SKU</p>
+                    </div>
+                </div>
+
+                <div class="border border-slate-200 rounded-2xl overflow-hidden">
+                    <table class="receipt-table min-w-full divide-y divide-slate-200 text-sm">
+                        <thead class="bg-slate-50">
+                            <tr class="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                                <th class="px-6 py-3">Item</th>
+                                <th class="px-6 py-3 text-center">Qty</th>
+                                <th class="px-6 py-3 text-right">Unit Price</th>
+                                <th class="px-6 py-3 text-right">Subtotal</th>
                             </tr>
-                        <?php endwhile; ?>
-                    </tbody>
-                </table>
-            </div>
-            
-            <!-- Total -->
-            <div class="bg-emerald-50 -mx-12 -mb-12 px-12 py-6 rounded-b-lg">
-                <div class="flex justify-between items-center">
-                    <span class="text-lg font-bold text-slate-900">Total Amount:</span>
-                    <span class="text-2xl font-bold text-emerald-600">₱<?php echo number_format($transaction['total_amount'], 2); ?></span>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            <?php foreach ($items as $item): ?>
+                                <tr>
+                                    <td class="px-6 py-4 font-medium text-slate-900"><?php echo htmlspecialchars($item['name']); ?></td>
+                                    <td class="px-6 py-4 text-center text-slate-600"><?php echo (int) $item['quantity']; ?></td>
+                                    <td class="px-6 py-4 text-right text-slate-600">₱<?php echo number_format($item['unit_price'], 2); ?></td>
+                                    <td class="px-6 py-4 text-right font-semibold text-slate-900">₱<?php echo number_format($item['subtotal'], 2); ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="receipt-summary bg-slate-50 border border-slate-200 rounded-2xl p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                        <p class="text-sm font-semibold text-slate-500">Thank you for choosing Tialo Japan Surplus.</p>
+                        <p class="text-xs text-slate-500">This serves as an official receipt for in-store purchases.</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-xs uppercase tracking-wide text-slate-500">Total Amount</p>
+                        <p class="text-3xl font-bold text-[#D00000]">₱<?php echo number_format($transaction['total_amount'], 2); ?></p>
+                    </div>
                 </div>
             </div>
-            
-            <!-- Footer -->
-            <div class="text-center mt-8 pt-6 border-t border-slate-200 text-sm text-slate-600 space-y-1">
-                <p class="font-semibold">Thank you for your purchase!</p>
-                <p>Visit us again soon.</p>
-                <p class="text-xs pt-2 text-slate-500">© 2025 Tialo Japan Surplus. All rights reserved.</p>
-            </div>
-        </div>
-        
-        <!-- Action Buttons -->
-        <div class="mt-8 flex gap-4 justify-center">
-            <button onclick="window.print()" class="flex items-center space-x-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition font-semibold">
-                <i class="fas fa-print"></i>
-                <span>Print Receipt</span>
-            </button>
-            <a href="index.php" class="flex items-center space-x-2 bg-emerald-600 text-white px-6 py-3 rounded-lg hover:bg-emerald-700 transition font-semibold">
-                <i class="fas fa-plus"></i>
-                <span>New Transaction</span>
-            </a>
-        </div>
+        </section>
+
+        <p class="text-center text-xs text-slate-500 mt-6 print:hidden">© <?php echo date('Y'); ?> Tialo Japan Surplus · Receipt generated by the POS module.</p>
     </main>
-    
-    <?php include '../../includes/footer.php'; ?>
 </body>
 </html>
