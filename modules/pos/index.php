@@ -38,6 +38,9 @@ $products_result = $conn->query($query);
 $categories_query = "SELECT DISTINCT category FROM products WHERE status = 'Available' ORDER BY category";
 $categories_result = $conn->query($categories_query);
 
+$img_base_url = '../../assets/img/products/';
+$placeholder = 'data:image/svg+xml,' . rawurlencode('<svg xmlns="http://www.w3.org/2000/svg" width="320" height="240"><rect width="320" height="240" fill="#e5e7eb"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#9ca3af" font-family="Arial" font-size="18">No image</text></svg>');
+
 $history_result = null;
 if ($tab === 'history') {
     $range_filters = [
@@ -78,179 +81,194 @@ if ($tab === 'history') {
         * { font-family: 'Inter', sans-serif; }
     </style>
 </head>
-<body class="bg-slate-50 flex">
+<body class="bg-slate-50 flex min-h-screen">
     <?php include '../../includes/sidebar.php'; ?>
     
     <div class="flex-1 flex flex-col">
-        <header class="bg-white border-b border-slate-200 sticky top-0 z-40 page-header">
-            <div class="px-6">
-                <div class="flex flex-wrap items-center justify-between gap-4">
-                    <div>
-                        <p class="text-xs uppercase tracking-wide text-slate-500">Sales Console</p>
-                        <h1 class="text-3xl font-bold text-slate-900">Point of Sale</h1>
-                        <p class="text-sm text-slate-600">Manage sales and checkout transactions</p>
-                    </div>
+        <header class="bg-white border-b border-slate-200 sticky top-0 z-40">
+            <div class="px-6 py-4 flex flex-wrap items-center justify-between gap-4">
+                <div>
                     <div class="flex items-center gap-3">
-                        <a href="?tab=catalog" class="inline-flex items-center px-4 py-2 text-sm font-semibold rounded-full transition whitespace-nowrap <?php echo $tab === 'catalog' ? 'bg-red-600 text-white shadow border border-red-600' : 'bg-white text-slate-600 border border-slate-200 hover:text-slate-900'; ?>">
-                            Catalog
-                        </a>
-                        <a href="?tab=history" class="inline-flex items-center px-4 py-2 text-sm font-semibold rounded-full transition whitespace-nowrap <?php echo $tab === 'history' ? 'bg-red-600 text-white shadow border border-red-600' : 'bg-white text-slate-600 border border-slate-200 hover:text-slate-900'; ?>">
-                            History
-                        </a>
+                        <h1 class="text-2xl font-semibold text-slate-900">Tialo Japan Surplus</h1>
+                        <span class="hidden sm:inline-flex items-center px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-semibold uppercase tracking-wide">POS System</span>
                     </div>
+                    <p class="text-xs text-slate-500 mt-1">Press F1 for shortcuts · Keep catalog, cart, and checkout visible together.</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <a href="?tab=catalog" class="inline-flex items-center px-4 py-2 text-sm font-semibold rounded-full transition whitespace-nowrap <?php echo $tab === 'catalog' ? 'bg-[#D00000] text-white border border-[#D00000] shadow' : 'bg-white text-slate-600 border border-slate-200 hover:text-slate-900'; ?>">
+                        Catalog
+                    </a>
+                    <a href="?tab=history" class="inline-flex items-center px-4 py-2 text-sm font-semibold rounded-full transition whitespace-nowrap <?php echo $tab === 'history' ? 'bg-[#D00000] text-white border border-[#D00000] shadow' : 'bg-white text-slate-600 border border-slate-200 hover:text-slate-900'; ?>">
+                        History
+                    </a>
                 </div>
             </div>
         </header>
         
-        <main class="flex-1 px-6 py-4">
+        <main class="flex-1 px-6 pt-4 pb-4 bg-slate-50 overflow-auto">
             <?php if ($tab === 'catalog'): ?>
-                <div class="flex flex-col lg:flex-row gap-6">
-                    <div class="flex-1 space-y-6">
-                        <div class="bg-white rounded-lg border border-slate-200 p-6">
-                            <div class="flex flex-col md:flex-row gap-4 mb-6">
-                                <div class="flex-1">
+                <div class="flex flex-col lg:flex-row gap-4 min-h-[calc(100vh-140px)] mt-2">
+                    <div class="flex-1 flex flex-col gap-3 overflow-y-auto pb-4">
+                        <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+                            <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+                                <div class="relative flex-1">
+                                    <span class="absolute inset-y-0 left-4 flex items-center text-slate-400">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                        </svg>
+                                    </span>
                                     <input 
                                         type="text" 
                                         id="searchInput" 
                                         placeholder="Search surplus items... (F2)" 
                                         value="<?php echo htmlspecialchars($search); ?>"
-                                        class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                                        class="w-full h-12 rounded-full border border-slate-200 bg-slate-50 pl-12 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-[#D00000]"
                                     >
                                 </div>
-                                <button onclick="performSearch()" class="px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition flex items-center space-x-2">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                <button onclick="performSearch()" class="h-12 px-5 rounded-full bg-[#D00000] text-white text-sm font-semibold flex items-center gap-2 hover:bg-red-700 transition">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M12 5l7 7-7 7" />
                                     </svg>
                                     <span>Search</span>
                                 </button>
                             </div>
                             
-                            <div class="flex flex-wrap gap-3">
-                                <a href="?category=All&tab=catalog" class="px-4 py-2 rounded-full text-sm font-medium transition <?php echo $category === 'All' ? 'bg-red-600 text-white' : 'bg-slate-200 text-slate-700 hover:bg-slate-300'; ?>">
+                            <div class="flex flex-wrap gap-2 mt-4 text-sm">
+                                <a href="?category=All&tab=catalog" class="px-4 py-2 rounded-full border <?php echo $category === 'All' ? 'bg-[#D00000] text-white border-[#D00000]' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'; ?>">
                                     All Items
                                 </a>
                                 <?php while ($cat = $categories_result->fetch_assoc()): ?>
                                     <a href="?category=<?php echo urlencode($cat['category']); ?>&tab=catalog" 
-                                       class="px-4 py-2 rounded-full text-sm font-medium transition <?php echo $category === $cat['category'] ? 'bg-red-600 text-white' : 'bg-slate-200 text-slate-700 hover:bg-slate-300'; ?>">
+                                       class="px-4 py-2 rounded-full border <?php echo $category === $cat['category'] ? 'bg-[#D00000] text-white border-[#D00000]' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'; ?>">
                                         <?php echo htmlspecialchars($cat['category']); ?>
                                     </a>
                                 <?php endwhile; ?>
                             </div>
                         </div>
                         
-                        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
-                            <?php 
-                            if ($products_result && $products_result->num_rows > 0) {
-                                while ($product = $products_result->fetch_assoc()): ?>
-                                <div class="bg-white rounded-lg border border-slate-200 overflow-hidden hover:shadow-lg hover:border-red-200 transition">
-                                    <div class="h-48 bg-slate-100 overflow-hidden relative">
-                                        <img src="/placeholder.svg?height=200&width=200" 
+                        <div class="flex-1 overflow-y-auto pr-1 pb-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 pb-6">
+                                <?php 
+                                if ($products_result && $products_result->num_rows > 0) {
+                                while ($product = $products_result->fetch_assoc()):
+                                    $raw_image = trim($product['image'] ?? '');
+                                    $img_src = $placeholder;
+                                    if ($raw_image) {
+                                        if (preg_match('/^https?:\\/\\//i', $raw_image)) {
+                                            $img_src = $raw_image;
+                                        } else {
+                                            $basename = basename(str_replace('\\', '/', $raw_image));
+                                            if ($basename && preg_match('/\\.(jpe?g|png|webp)$/i', $basename)) {
+                                                $img_src = $img_base_url . $basename;
+                                            }
+                                        }
+                                    }
+                                    ?>
+                                <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm hover:shadow-lg hover:-translate-y-1 transition flex flex-col gap-4">
+                                    <div class="aspect-video rounded-xl bg-slate-100 overflow-hidden">
+                                        <img src="<?php echo $img_src; ?>" 
                                              alt="<?php echo htmlspecialchars($product['name']); ?>"
                                              class="w-full h-full object-cover">
-                                        <div class="absolute top-3 right-3 bg-red-600 text-white px-3 py-1 rounded-lg text-xs font-bold">
-                                            Stock: <?php echo (int) $product['quantity']; ?>
-                                        </div>
                                     </div>
-                                    <div class="p-4 space-y-2">
-                                        <div>
-                                            <h3 class="font-bold text-slate-900 text-sm truncate"><?php echo htmlspecialchars($product['name']); ?></h3>
-                                            <p class="text-xs text-slate-600"><?php echo htmlspecialchars($product['category']); ?></p>
-                                        </div>
-                                        <div class="flex items-center justify-between">
-                                            <p class="text-2xl font-bold text-red-600">₱<?php echo number_format($product['price'], 2); ?></p>
-                                            <span class="text-xs font-semibold text-slate-500">Stock <?php echo (int) $product['quantity']; ?></span>
-                                        </div>
-                                        <button 
-                                            class="w-full py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition flex items-center justify-center space-x-2"
-                                            onclick="addToCart(<?php echo (int) $product['product_id']; ?>, '<?php echo htmlspecialchars($product['name'], ENT_QUOTES); ?>', <?php echo (float) $product['price']; ?>, <?php echo (int) $product['quantity']; ?>)"
-                                        >
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                                            </svg>
-                                            <span>Add to Cart</span>
-                                        </button>
+                                    <div class="space-y-1">
+                                            <div class="flex items-center justify-between text-[11px] uppercase tracking-wide text-slate-500">
+                                                <span><?php echo htmlspecialchars($product['category'] ?: 'Uncategorized'); ?></span>
+                                                <span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-semibold">Stock: <?php echo (int) $product['quantity']; ?></span>
+                                            </div>
+                                            <h3 class="text-base font-semibold text-slate-900 truncate"><?php echo htmlspecialchars($product['name']); ?></h3>
                                     </div>
+                                    <div class="flex items-center justify-between">
+                                        <p class="text-2xl font-bold text-slate-900">₱<?php echo number_format($product['price'], 2); ?></p>
+                                        <span class="text-xs text-slate-500">ID <?php echo (int) $product['product_id']; ?></span>
+                                    </div>
+                                    <button 
+                                        class="mt-auto inline-flex items-center justify-center gap-2 h-11 rounded-2xl bg-slate-900 text-white text-sm font-semibold hover:bg-black transition"
+                                        onclick="addToCart(<?php echo (int) $product['product_id']; ?>, '<?php echo htmlspecialchars($product['name'], ENT_QUOTES); ?>', <?php echo (float) $product['price']; ?>, <?php echo (int) $product['quantity']; ?>)"
+                                    >
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                        </svg>
+                                        <span>Add to Cart</span>
+                                    </button>
                                 </div>
                             <?php endwhile;
                             } else {
-                                echo '<div class="col-span-full text-center py-12"><p class="text-slate-600">No products found</p></div>';
+                                echo '<div class="col-span-full text-center py-12 text-slate-600">No products found</div>';
                             }
                             ?>
+                            </div>
                         </div>
                     </div>
 
-                    <aside class="w-full lg:w-96 space-y-6">
-                        <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
-                            <div class="flex items-center justify-between mb-4">
+                    <aside class="w-full lg:w-[320px] xl:w-[340px] shrink-0">
+                        <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm flex flex-col gap-4 lg:sticky lg:top-4">
+                            <div class="flex items-center justify-between gap-3">
                                 <div>
                                     <h2 class="text-lg font-semibold text-slate-900">Shopping Cart</h2>
-                                    <p class="text-xs text-slate-500">Shortcuts: + add qty · - remove qty · Del remove item</p>
+                                    <p class="text-xs text-slate-500">Quick: + add qty · - remove qty · Del remove item</p>
                                 </div>
-                                <span id="cartCount" class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-slate-100 text-sm font-semibold text-slate-700">0</span>
+                                <span id="cartCount" class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-slate-900 text-white text-sm font-semibold">0</span>
                             </div>
-                            <div id="cartItems" class="space-y-4 max-h-[420px] overflow-y-auto pr-1">
-                                <p class="text-slate-600 text-center py-8">Cart is empty</p>
+                            <div id="cartItems" class="space-y-3 max-h-[50vh] overflow-y-auto pr-1">
+                                <p class="text-slate-500 text-sm text-center py-8">Cart is empty</p>
                             </div>
-                        </div>
-
-                        <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-5">
-                        <div class="space-y-4 text-sm text-slate-600">
-                            <div class="flex items-center justify-between">
-                                <span>Subtotal</span>
-                                <span id="subtotal" class="font-semibold text-slate-900">₱0.00</span>
-                            </div>
-                            <div>
-                                <div class="flex items-center justify-between mb-1">
-                                    <label for="discountAmount" class="block font-medium">Discount</label>
-                                    <button onclick="clearCart()" type="button" class="text-xs text-slate-500 hover:text-red-600 transition">Clear cart</button>
+                            <div class="space-y-4 border-t border-slate-100 pt-4">
+                                <div class="flex items-center justify-between text-sm">
+                                    <span class="text-slate-500">Subtotal</span>
+                                    <span id="subtotal" class="font-semibold text-slate-900">₱0.00</span>
                                 </div>
-                                <input type="number" min="0" step="0.01" id="discountAmount" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500" placeholder="0.00">
-                                <p id="discountError" class="hidden text-xs text-red-600 mt-1">Discount cannot exceed subtotal.</p>
+                                <div>
+                                    <div class="flex items-center justify-between mb-1">
+                                        <label for="discountAmount" class="text-sm font-medium text-slate-700">Discount</label>
+                                        <button onclick="clearCart()" type="button" class="text-xs text-slate-400 hover:text-red-600 transition">Clear cart</button>
+                                    </div>
+                                    <input type="number" min="0" step="0.01" id="discountAmount" class="w-full h-11 px-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#D00000] text-sm" placeholder="0.00">
+                                    <p id="discountError" class="hidden text-xs text-red-600 mt-1">Discount cannot exceed subtotal.</p>
+                                </div>
+                                <div class="flex items-center justify-between text-lg font-semibold text-slate-900">
+                                    <span>Total</span>
+                                    <span id="total">₱0.00</span>
+                                </div>
                             </div>
-                            <div class="flex items-center justify-between text-base font-semibold text-slate-900 pt-2 border-t border-slate-200">
-                                <span>Total</span>
-                                <span id="total">₱0.00</span>
-                            </div>
-                        </div>
 
-                        <div>
-                            <p class="text-xs uppercase font-semibold text-slate-500 mb-3">Payment Method</p>
-                            <div class="grid grid-cols-2 gap-3" id="paymentButtons">
-                                <button type="button" class="payment-method-btn p-3 rounded-lg border border-slate-200 hover:border-red-600 hover:bg-red-50 transition text-left" data-method="Cash">
-                                    <p class="text-sm font-semibold text-slate-900">Cash (F3)</p>
-                                    <p class="text-xs text-slate-500">Counter payment</p>
-                                </button>
-                                <button type="button" class="payment-method-btn p-3 rounded-lg border border-slate-200 hover:border-red-600 hover:bg-red-50 transition text-left" data-method="GCash">
-                                    <p class="text-sm font-semibold text-slate-900">GCash (F4)</p>
-                                    <p class="text-xs text-slate-500">QR payment</p>
-                                </button>
-                                <button type="button" class="payment-method-btn p-3 rounded-lg border border-slate-200 hover:border-red-600 hover:bg-red-50 transition text-left col-span-2" data-method="Installment">
-                                    <p class="text-sm font-semibold text-slate-900">Installment (F5)</p>
-                                    <p class="text-xs text-slate-500">Auto-schedule dues</p>
-                                </button>
+                            <div class="space-y-3">
+                                <p class="text-xs uppercase font-semibold text-slate-500">Payment Method</p>
+                                <div class="flex flex-wrap gap-2" id="paymentButtons">
+                                    <button type="button" class="payment-method-btn flex-1 min-w-[110px] px-4 py-3 rounded-2xl border border-slate-200 text-left hover:border-[#D00000] hover:bg-red-50 transition" data-method="Cash">
+                                        <p class="text-sm font-semibold text-slate-900">Cash (F3)</p>
+                                        <p class="text-xs text-slate-500">Counter payment</p>
+                                    </button>
+                                    <button type="button" class="payment-method-btn flex-1 min-w-[110px] px-4 py-3 rounded-2xl border border-slate-200 text-left hover:border-[#D00000] hover:bg-red-50 transition" data-method="GCash">
+                                        <p class="text-sm font-semibold text-slate-900">GCash (F4)</p>
+                                        <p class="text-xs text-slate-500">QR payment</p>
+                                    </button>
+                                    <button type="button" class="payment-method-btn w-full px-4 py-3 rounded-2xl border border-slate-200 text-left hover:border-[#D00000] hover:bg-red-50 transition" data-method="Installment">
+                                        <p class="text-sm font-semibold text-slate-900">Installment (F5)</p>
+                                        <p class="text-xs text-slate-500">Auto-schedule dues</p>
+                                    </button>
+                                </div>
+                                <div id="installmentConfig" class="hidden border border-dashed border-slate-200 rounded-2xl p-3 bg-slate-50">
+                                    <label for="installmentMonths" class="block text-xs font-semibold text-slate-500 mb-2">Installment term</label>
+                                    <select id="installmentMonths" class="w-full h-10 px-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-900 text-sm">
+                                        <option value="3">3 months</option>
+                                        <option value="6" selected>6 months</option>
+                                        <option value="12">12 months</option>
+                                    </select>
+                                    <p class="text-xs text-slate-500 mt-2">Monthly dues are computed automatically after completion.</p>
+                                </div>
                             </div>
-                            <div id="installmentConfig" class="hidden mt-4 border border-dashed border-slate-200 rounded-lg p-3 bg-slate-50">
-                                <label for="installmentMonths" class="block text-xs font-semibold text-slate-500 mb-2">Installment term</label>
-                                <select id="installmentMonths" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 text-sm">
-                                    <option value="3">3 months</option>
-                                    <option value="6" selected>6 months</option>
-                                    <option value="12">12 months</option>
-                                </select>
-                                <p class="text-xs text-slate-500 mt-2">Monthly dues are computed automatically after completion.</p>
-                            </div>
-                        </div>
 
-                        <button id="completeSaleBtn" onclick="proceedToCheckout()" class="w-full py-3 bg-red-600 hover:bg-red-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition flex items-center justify-center gap-2">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
-                            </svg>
-                            <span>Complete Sale (F9)</span>
-                        </button>
+                            <button id="completeSaleBtn" onclick="proceedToCheckout()" class="w-full h-12 rounded-2xl bg-[#D00000] hover:bg-red-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold transition flex items-center justify-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                                </svg>
+                                <span>Complete Sale (F9)</span>
+                            </button>
                         </div>
                     </aside>
                 </div>
             <?php elseif ($tab === 'history'): ?>
-                <div class="bg-white rounded-lg border border-slate-200 p-6">
+                <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm h-full overflow-y-auto">
                     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
                         <div>
                             <p class="text-xs uppercase tracking-wide text-slate-500">Transaction History</p>
@@ -322,5 +340,29 @@ if ($tab === 'history') {
 </div>
 
         <script src="../../assets/js/pos.js"></script>
+        <script>
+        function performSearch() {
+            const input = document.getElementById('searchInput');
+            if (!input) return;
+            const params = new URLSearchParams(window.location.search);
+            const value = input.value.trim();
+            if (value) {
+                params.set('search', value);
+            } else {
+                params.delete('search');
+            }
+            params.set('tab', 'catalog');
+            window.location.href = '?' + params.toString();
+        }
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('keydown', function (event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    performSearch();
+                }
+            });
+        }
+        </script>
 </body>
 </html>

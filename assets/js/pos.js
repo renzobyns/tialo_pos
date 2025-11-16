@@ -24,7 +24,7 @@ function updateCart() {
   if (!cartItemsDiv || !cartCountSpan) return
 
   if (cart.length === 0) {
-    cartItemsDiv.innerHTML = '<p class="text-slate-600 text-center py-8">Cart is empty</p>'
+    cartItemsDiv.innerHTML = '<p class="text-slate-500 text-sm text-center py-8">Cart is empty</p>'
     cartCountSpan.textContent = "0"
     updateTotal()
     return
@@ -33,19 +33,28 @@ function updateCart() {
   cartItemsDiv.innerHTML = cart
     .map(
       (item, index) => `
-      <div class="flex items-center justify-between border border-slate-100 rounded-lg p-3">
-        <div>
-          <p class="text-sm font-semibold text-slate-900">${item.name}</p>
-          <p class="text-xs text-slate-500">${formatPeso(item.price)}</p>
+        <div class="rounded-2xl border border-slate-200 p-4 bg-slate-50/70">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <p class="text-sm font-semibold text-slate-900">${item.name}</p>
+              <p class="text-xs text-slate-500">${formatPeso(item.price)}</p>
+            </div>
+            <button class="text-slate-400 hover:text-red-600 transition" onclick="removeFromCart(${index})" title="Remove item">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 7h12M10 11v6m4-6v6M9 7l1-3h4l1 3m-7 0h8l-1 12H10z"></path>
+              </svg>
+            </button>
+          </div>
+          <div class="mt-3 flex items-center justify-between gap-3">
+            <div class="flex items-center gap-2">
+              <button class="w-8 h-8 rounded-full border border-slate-200 text-sm font-semibold text-slate-600 hover:border-slate-400" onclick="decreaseQty(${index})">-</button>
+              <input type="number" class="w-14 text-center border border-slate-200 rounded-full text-sm h-8" value="${item.quantity}" onchange="setQty(${index}, this.value)">
+              <button class="w-8 h-8 rounded-full border border-slate-200 text-sm font-semibold text-slate-600 hover:border-slate-400" onclick="increaseQty(${index})">+</button>
+            </div>
+            <p class="text-sm font-semibold text-slate-900">${formatPeso(item.subtotal)}</p>
+          </div>
         </div>
-        <div class="flex items-center gap-2">
-          <button class="px-2 py-1 text-sm border rounded" onclick="decreaseQty(${index})">-</button>
-          <input type="number" class="w-14 text-center border rounded text-sm" value="${item.quantity}" onchange="setQty(${index}, this.value)">
-          <button class="px-2 py-1 text-sm border rounded" onclick="increaseQty(${index})">+</button>
-          <button class="text-red-600 text-sm font-semibold" onclick="removeFromCart(${index})">Remove</button>
-        </div>
-      </div>
-    `,
+      `,
     )
     .join("")
 
@@ -148,9 +157,9 @@ function selectPayment(method) {
   const buttons = document.querySelectorAll(".payment-method-btn")
   buttons.forEach((btn) => {
     if (btn.dataset.method === method) {
-      btn.classList.add("border-red-600", "bg-red-50", "text-red-700", "shadow-sm")
+      btn.classList.add("border-[#D00000]", "bg-red-50", "text-[#D00000]", "shadow-sm")
     } else {
-      btn.classList.remove("border-red-600", "bg-red-50", "text-red-700", "shadow-sm")
+      btn.classList.remove("border-[#D00000]", "bg-red-50", "text-[#D00000]", "shadow-sm")
     }
   })
   const installmentBlock = document.getElementById("installmentConfig")

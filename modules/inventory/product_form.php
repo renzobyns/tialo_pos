@@ -71,7 +71,7 @@ $shipments_result = $conn->query($shipments_query);
                     <h2 class="text-xl font-semibold text-slate-900">Product Details</h2>
                     <p class="text-sm text-slate-500 mt-1">All required fields are marked with a red badge.</p>
                 </div>
-                <form method="POST" action="process_product.php" class="px-8 py-6 space-y-6">
+                <form method="POST" action="process_product.php" class="px-8 py-6 space-y-6" enctype="multipart/form-data">
                     <?php if ($is_edit): ?>
                         <input type="hidden" name="action" value="update">
                         <input type="hidden" name="product_id" value="<?php echo $product['product_id']; ?>">
@@ -151,6 +151,24 @@ $shipments_result = $conn->query($shipments_query);
                                 <?php endwhile; ?>
                             <?php endif; ?>
                         </select>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                            <svg class="w-4 h-4 text-[#D00000]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354l1.853 3.754 4.147.603-3 2.924.708 4.127L12 17.77l-3.708 1.956.708-4.127-3-2.924 4.147-.603L12 4.354z" /></svg>
+                            Product Image
+                        </label>
+                        <?php if (!empty($product['image'])): ?>
+                            <div class="flex items-center gap-3">
+                                <img src="<?php echo '/assets/img/' . htmlspecialchars($product['image']); ?>" alt="Current image" class="w-20 h-20 object-cover rounded border border-slate-200">
+                                <label class="inline-flex items-center gap-2 text-sm text-slate-600">
+                                    <input type="checkbox" name="remove_image" value="1" class="rounded border-slate-300">
+                                    Remove image
+                                </label>
+                            </div>
+                        <?php endif; ?>
+                        <input type="file" name="image" accept="image/*" capture="environment" class="block w-full text-sm text-slate-600 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200">
+                        <p class="text-xs text-slate-500">JPG/PNG/WebP, up to 4 MB. Mobile can capture directly.</p>
                     </div>
 
                     <div class="flex items-center justify-end gap-3 pt-6 border-t border-slate-100">
