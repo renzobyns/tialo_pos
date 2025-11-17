@@ -4,6 +4,7 @@ let paymentType = "Cash"
 let installmentMonths = 6
 const stateKey = "posCatalogState"
 const suggestionLimit = 8
+const holdKey = "posHeldCart"
 const toastDuration = 3000
 
 const peso = new Intl.NumberFormat("en-PH", {
@@ -151,8 +152,16 @@ function updateTotal() {
 
   const subtotalEl = document.getElementById("subtotal")
   const totalEl = document.getElementById("total")
+  const badgeEl = document.getElementById("discountBadge")
   if (subtotalEl) subtotalEl.textContent = formatPeso(subtotal)
   if (totalEl) totalEl.textContent = formatPeso(total)
+  if (badgeEl) {
+    if (discount > 0) {
+      badgeEl.classList.remove("hidden")
+    } else {
+      badgeEl.classList.add("hidden")
+    }
+  }
 }
 
 function selectPayment(method) {
@@ -208,6 +217,41 @@ function showToast(message, type = "info") {
     el.style.transition = "opacity 0.3s ease"
     setTimeout(() => el.remove(), 300)
   }, toastDuration)
+}
+
+function holdCart() {
+  try {
+    const discountInput = document.getElementById("discountAmount")
+    const discount = Number.parseFloat(discountInput?.value) || 0
+    const payload = { cart, discount, paymentType, installmentMonths }
+    localStorage.setItem(holdKey, JSON.stringify(payload))
+    showToast("Cart held", "success")
+  } catch (e) {
+    showToast("Unable to hold cart", "error")
+  }
+}
+
+function restoreCart() {
+  try {
+    const raw = localStorage.getItem(holdKey)
+    if (!raw) {
+      showToast("No held cart", "error")
+      return
+    }
+    const data = JSON.parse(raw)
+    cart = Array.isArray(data.cart) ? data.cart : []
+    paymentType = data.paymentType || "Cash"
+    installmentMonths = data.installmentMonths || 6
+    const discountInput = document.getElementById("discountAmount")
+    if (discountInput) {
+      discountInput.value = data.discount || 0
+    }
+    updateCart()
+    selectPayment(paymentType)
+    showToast("Cart restored", "success")
+  } catch (e) {
+    showToast("Unable to restore cart", "error")
+  }
 }
 
 async function proceedToCheckout() {

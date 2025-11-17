@@ -291,7 +291,7 @@ if ($tab === 'history') {
                                     <p id="discountError" class="hidden text-xs text-red-600 mt-1">Discount cannot exceed subtotal.</p>
                                 </div>
                                 <div class="flex items-center justify-between text-lg font-semibold text-slate-900">
-                                    <span>Total</span>
+                                    <span class="flex items-center gap-2">Total <span id="discountBadge" class="hidden text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">Discount applied</span></span>
                                     <span id="total">₱0.00</span>
                                 </div>
                             </div>
@@ -426,7 +426,7 @@ if ($tab === 'history') {
 
         <div id="toastContainer" class="fixed top-4 right-4 z-50 space-y-2"></div>
 
-        <script src="../../assets/js/pos.js"></script>
+        <script src="../../assets/js/pos.js?v=<?php echo filemtime(__DIR__ . '/../../assets/js/pos.js'); ?>"></script>
         <script>
         window.POS_PRODUCTS = <?php echo json_encode($product_names); ?>;
         function performSearch() {
