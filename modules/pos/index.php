@@ -216,7 +216,9 @@ if ($tab === 'history') {
                                         } else {
                                             $basename = basename(str_replace('\\', '/', $raw_image));
                                             if ($basename && preg_match('/\\.(jpe?g|png|webp)$/i', $basename)) {
-                                                $img_src = $img_base_url . $basename;
+                                                $abs = __DIR__ . '/../../assets/img/products/' . $basename;
+                                                $version = is_file($abs) ? '?v=' . filemtime($abs) : '';
+                                                $img_src = $img_base_url . $basename . $version;
                                             }
                                         }
                                     }
@@ -224,8 +226,8 @@ if ($tab === 'history') {
                                 <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm hover:shadow-lg hover:-translate-y-1 transition flex flex-col gap-4">
                                     <div class="aspect-video rounded-xl bg-slate-100 overflow-hidden">
                                         <img src="<?php echo $img_src; ?>" 
-                                             alt="<?php echo htmlspecialchars($product['name']); ?>"
-                                             class="w-full h-full object-cover">
+                                            alt="<?php echo htmlspecialchars($product['name']); ?>"
+                                            class="w-full h-full object-cover" loading="lazy" style="max-height: 260px;">
                                     </div>
                                     <div class="space-y-1">
                                             <div class="flex items-center justify-between text-[11px] uppercase tracking-wide text-slate-500">
