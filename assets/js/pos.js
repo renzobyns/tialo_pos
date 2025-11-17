@@ -3,6 +3,8 @@ let cart = []
 let paymentType = "Cash"
 let installmentMonths = 6
 const stateKey = "posCatalogState"
+const suggestionLimit = 8
+const toastDuration = 3000
 
 const peso = new Intl.NumberFormat("en-PH", {
   style: "currency",
@@ -188,9 +190,29 @@ function loadCatalogState() {
   }
 }
 
+function showToast(message, type = "info") {
+  const container = document.getElementById("toastContainer")
+  if (!container) return
+  const el = document.createElement("div")
+  const colors =
+    type === "success"
+      ? "bg-emerald-600 text-white border border-emerald-700"
+      : type === "error"
+        ? "bg-red-600 text-white border border-red-700"
+        : "bg-slate-800 text-white border border-slate-900"
+  el.className = `px-4 py-3 rounded-xl shadow-lg text-sm font-semibold ${colors}`
+  el.textContent = message
+  container.appendChild(el)
+  setTimeout(() => {
+    el.style.opacity = "0"
+    el.style.transition = "opacity 0.3s ease"
+    setTimeout(() => el.remove(), 300)
+  }, toastDuration)
+}
+
 async function proceedToCheckout() {
   if (cart.length === 0) {
-    alert("Cart is empty")
+    showToast("Cart is empty", "error")
     return
   }
 
@@ -230,9 +252,10 @@ async function proceedToCheckout() {
     }
     cart = []
     updateCart()
+    showToast("Sale completed", "success")
     window.location.href = data.receipt_url
   } catch (error) {
-    alert(error.message || "Something went wrong while completing the sale.")
+    showToast(error.message || "Something went wrong while completing the sale.", "error")
   } finally {
     if (submitBtn) {
       submitBtn.disabled = false
@@ -301,7 +324,7 @@ document.addEventListener("DOMContentLoaded", () => {
   setupKeyboardShortcuts()
 })
 
-// Persist category/search state when clicking pills or performing search
+// Persist state + suggestions
 document.addEventListener("DOMContentLoaded", () => {
   const params = new URLSearchParams(window.location.search)
   const initialCategory = params.get("category") || "All"
@@ -319,6 +342,63 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const searchInput = document.getElementById("searchInput")
   const searchBtn = document.getElementById("searchBtn")
+  const suggestionBox = document.getElementById("searchSuggestions")
+  const suggestionList = suggestionBox?.querySelector("ul")
+  const products = Array.isArray(window.POS_PRODUCTS) ? window.POS_PRODUCTS : []
+
+  const hideSuggestions = () => suggestionBox?.classList.add("hidden")
+
+  const showSuggestions = (matches) => {
+    if (!suggestionList || !suggestionBox) return
+    if (!matches.length) {
+      hideSuggestions()
+      return
+    }
+    suggestionList.innerHTML = matches
+      .slice(0, suggestionLimit)
+      .map(
+        (item) =>
+          `<li class="px-4 py-2 hover:bg-slate-50 cursor-pointer" data-name="${item.name}">${item.name} <span class="text-xs text-slate-500">(${item.category || "Uncategorized"})</span></li>`,
+      )
+      .join("")
+    suggestionBox.classList.remove("hidden")
+  }
+
+  if (suggestionList) {
+    suggestionList.addEventListener("click", (e) => {
+      const target = e.target.closest("li")
+      if (!target) return
+      const name = target.getAttribute("data-name") || ""
+      if (searchInput) {
+        searchInput.value = name
+        persistCatalogState(initialCategory, name)
+        hideSuggestions()
+        document.getElementById("searchBtn")?.click()
+      }
+    })
+  }
+
+  if (searchInput) {
+    searchInput.addEventListener("input", () => {
+      const term = searchInput.value.trim().toLowerCase()
+      if (!term) {
+        hideSuggestions()
+        return
+      }
+      const matches = products.filter((p) => p.name && p.name.toLowerCase().includes(term))
+      showSuggestions(matches)
+    })
+    searchInput.addEventListener("focus", () => {
+      const term = searchInput.value.trim().toLowerCase()
+      if (!term) return
+      const matches = products.filter((p) => p.name && p.name.toLowerCase().includes(term))
+      showSuggestions(matches)
+    })
+    searchInput.addEventListener("blur", () => {
+      setTimeout(hideSuggestions, 120)
+    })
+  }
+
   const applySearch = () => {
     const cat = initialCategory
     const searchVal = searchInput?.value || ""

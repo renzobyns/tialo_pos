@@ -9,6 +9,8 @@ $allowed_tabs = ['catalog', 'history'];
 if (!in_array($tab, $allowed_tabs, true)) {
     $tab = 'catalog';
 }
+$sort = $_GET['sort'] ?? 'default';
+$low_stock_threshold = 5;
 $history_ranges = [
     'today' => 'Today',
     'week' => 'This Week',
@@ -32,11 +34,28 @@ if (!empty($search)) {
     $query .= " AND name LIKE '%$search%'";
 }
 
-$query .= " ORDER BY product_id DESC";
+if ($sort === 'lowstock') {
+    $query .= " ORDER BY (quantity <= {$low_stock_threshold}) DESC, product_id DESC";
+} else {
+    $query .= " ORDER BY product_id DESC";
+}
 $products_result = $conn->query($query);
 
 $categories_query = "SELECT DISTINCT category FROM products WHERE status = 'Available' ORDER BY category";
 $categories_result = $conn->query($categories_query);
+
+$product_names = [];
+if ($products_result && $products_result->num_rows > 0) {
+    $products_result->data_seek(0);
+    while ($p = $products_result->fetch_assoc()) {
+        $product_names[] = [
+            'name' => $p['name'],
+            'category' => $p['category'],
+            'id' => $p['product_id']
+        ];
+    }
+    $products_result->data_seek(0);
+}
 
 $img_base_url = '../../assets/img/products/';
 $placeholder = 'data:image/svg+xml,' . rawurlencode('<svg xmlns="http://www.w3.org/2000/svg" width="320" height="240"><rect width="320" height="240" fill="#e5e7eb"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#9ca3af" font-family="Arial" font-size="18">No image</text></svg>');
@@ -149,8 +168,13 @@ if ($tab === 'history') {
                                         value="<?php echo htmlspecialchars($search); ?>"
                                         class="w-full h-12 rounded-full border border-slate-200 bg-slate-50 pl-12 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-[#D00000]"
                                     >
+                                    <div id="searchSuggestions" class="absolute top-full left-0 right-0 mt-2 hidden z-30">
+                                        <div class="bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden">
+                                            <ul class="divide-y divide-slate-100 text-sm max-h-64 overflow-y-auto"></ul>
+                                        </div>
+                                    </div>
                                 </div>
-                                <button onclick="performSearch()" class="h-12 px-5 rounded-full bg-[#D00000] text-white text-sm font-semibold flex items-center gap-2 hover:bg-red-700 transition">
+                                <button id="searchBtn" onclick="performSearch()" class="h-12 px-5 rounded-full bg-[#D00000] text-white text-sm font-semibold flex items-center gap-2 hover:bg-red-700 transition">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M12 5l7 7-7 7" />
                                     </svg>
@@ -159,16 +183,23 @@ if ($tab === 'history') {
                             </div>
                             
                             <div class="flex flex-wrap gap-2 mt-4 text-sm">
-                                <a href="?category=All&tab=catalog" class="category-pill px-4 py-2 rounded-full border <?php echo $category === 'All' ? 'bg-[#D00000] text-white border-[#D00000]' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'; ?>" data-category="All">
+                                <a href="?category=All&tab=catalog&sort=<?php echo htmlspecialchars($sort); ?>" class="category-pill px-4 py-2 rounded-full border <?php echo $category === 'All' ? 'bg-[#D00000] text-white border-[#D00000]' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'; ?>" data-category="All">
                                     All Items
                                 </a>
                                 <?php while ($cat = $categories_result->fetch_assoc()): ?>
-                                    <a href="?category=<?php echo urlencode($cat['category']); ?>&tab=catalog" 
+                                    <a href="?category=<?php echo urlencode($cat['category']); ?>&tab=catalog&sort=<?php echo htmlspecialchars($sort); ?>" 
                                        class="category-pill px-4 py-2 rounded-full border <?php echo $category === $cat['category'] ? 'bg-[#D00000] text-white border-[#D00000]' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'; ?>"
                                        data-category="<?php echo htmlspecialchars($cat['category']); ?>">
                                         <?php echo htmlspecialchars($cat['category']); ?>
                                     </a>
                                 <?php endwhile; ?>
+                                <div class="flex items-center gap-2 ml-auto">
+                                    <span class="text-xs text-slate-500">Sort:</span>
+                                    <a href="?tab=catalog&category=<?php echo urlencode($category); ?>&search=<?php echo urlencode($search); ?>&sort=default"
+                                       class="px-3 py-2 rounded-full text-xs font-semibold border <?php echo $sort === 'default' ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-600 border-slate-200'; ?>">Default</a>
+                                    <a href="?tab=catalog&category=<?php echo urlencode($category); ?>&search=<?php echo urlencode($search); ?>&sort=lowstock"
+                                       class="px-3 py-2 rounded-full text-xs font-semibold border <?php echo $sort === 'lowstock' ? 'bg-[#D00000] text-white border-[#D00000]' : 'bg-white text-slate-600 border-slate-200'; ?>">Low stock first</a>
+                                </div>
                             </div>
                         </div>
                         
@@ -199,7 +230,13 @@ if ($tab === 'history') {
                                     <div class="space-y-1">
                                             <div class="flex items-center justify-between text-[11px] uppercase tracking-wide text-slate-500">
                                                 <span><?php echo htmlspecialchars($product['category'] ?: 'Uncategorized'); ?></span>
-                                                <span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-semibold">Stock: <?php echo (int) $product['quantity']; ?></span>
+                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full <?php echo (int)$product['quantity'] <= $low_stock_threshold ? 'bg-amber-100 text-amber-700 font-semibold' : 'bg-slate-100 text-slate-600'; ?>">
+                                                    <?php if ((int)$product['quantity'] <= $low_stock_threshold): ?>
+                                                        Low stock
+                                                    <?php else: ?>
+                                                        Stock: <?php echo (int) $product['quantity']; ?>
+                                                    <?php endif; ?>
+                                                </span>
                                             </div>
                                             <h3 class="text-base font-semibold text-slate-900 truncate"><?php echo htmlspecialchars($product['name']); ?></h3>
                                     </div>
@@ -385,8 +422,11 @@ if ($tab === 'history') {
     </div>
 </div>
 
+        <div id="toastContainer" class="fixed top-4 right-4 z-50 space-y-2"></div>
+
         <script src="../../assets/js/pos.js"></script>
         <script>
+        window.POS_PRODUCTS = <?php echo json_encode($product_names); ?>;
         function performSearch() {
             const input = document.getElementById('searchInput');
             if (!input) return;
