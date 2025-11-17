@@ -42,7 +42,11 @@ $img_base_url = '../../assets/img/products/';
 $placeholder = 'data:image/svg+xml,' . rawurlencode('<svg xmlns="http://www.w3.org/2000/svg" width="320" height="240"><rect width="320" height="240" fill="#e5e7eb"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#9ca3af" font-family="Arial" font-size="18">No image</text></svg>');
 
 $history_result = null;
+$history_search = '';
+$history_payment = 'all';
 if ($tab === 'history') {
+    $history_search = isset($_GET['history_search']) ? trim($_GET['history_search']) : '';
+    $history_payment = $_GET['history_payment'] ?? 'all';
     $range_filters = [
         'today' => "DATE(t.transaction_date) = CURDATE()",
         'week' => "YEARWEEK(t.transaction_date, 1) = YEARWEEK(CURDATE(), 1)",
@@ -50,6 +54,22 @@ if ($tab === 'history') {
         'all' => "1=1"
     ];
     $where_clause = $range_filters[$selected_range] ?? $range_filters['today'];
+    $params = [];
+    $types = '';
+    $payment_filter = '';
+    if (in_array($history_payment, ['Cash', 'GCash', 'Installment'], true)) {
+        $payment_filter = " AND t.payment_type = ?";
+        $types .= 's';
+        $params[] = $history_payment;
+    }
+    $search_filter = '';
+    if ($history_search !== '') {
+        $search_filter = " AND (u.name LIKE ? OR t.transaction_id LIKE ?)";
+        $types .= 'ss';
+        $like = '%' . $history_search . '%';
+        $params[] = $like;
+        $params[] = $like;
+    }
     $history_query = "
         SELECT 
             t.transaction_id,
@@ -60,11 +80,16 @@ if ($tab === 'history') {
             (SELECT COUNT(*) FROM transaction_items ti WHERE ti.transaction_id = t.transaction_id) AS item_count
         FROM transactions t
         LEFT JOIN users u ON u.user_id = t.user_id
-        WHERE {$where_clause}
+        WHERE {$where_clause} {$payment_filter} {$search_filter}
         ORDER BY t.transaction_date DESC
-        LIMIT 50
+        LIMIT 100
     ";
-    $history_result = $conn->query($history_query);
+    $history_stmt = $conn->prepare($history_query);
+    if ($types) {
+        $history_stmt->bind_param($types, ...$params);
+    }
+    $history_stmt->execute();
+    $history_result = $history_stmt->get_result();
 }
 ?>
 <!DOCTYPE html>
@@ -134,12 +159,13 @@ if ($tab === 'history') {
                             </div>
                             
                             <div class="flex flex-wrap gap-2 mt-4 text-sm">
-                                <a href="?category=All&tab=catalog" class="px-4 py-2 rounded-full border <?php echo $category === 'All' ? 'bg-[#D00000] text-white border-[#D00000]' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'; ?>">
+                                <a href="?category=All&tab=catalog" class="category-pill px-4 py-2 rounded-full border <?php echo $category === 'All' ? 'bg-[#D00000] text-white border-[#D00000]' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'; ?>" data-category="All">
                                     All Items
                                 </a>
                                 <?php while ($cat = $categories_result->fetch_assoc()): ?>
                                     <a href="?category=<?php echo urlencode($cat['category']); ?>&tab=catalog" 
-                                       class="px-4 py-2 rounded-full border <?php echo $category === $cat['category'] ? 'bg-[#D00000] text-white border-[#D00000]' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'; ?>">
+                                       class="category-pill px-4 py-2 rounded-full border <?php echo $category === $cat['category'] ? 'bg-[#D00000] text-white border-[#D00000]' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'; ?>"
+                                       data-category="<?php echo htmlspecialchars($cat['category']); ?>">
                                         <?php echo htmlspecialchars($cat['category']); ?>
                                     </a>
                                 <?php endwhile; ?>
@@ -269,20 +295,40 @@ if ($tab === 'history') {
                 </div>
             <?php elseif ($tab === 'history'): ?>
                 <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm h-full overflow-y-auto">
-                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-                        <div>
+                    <div class="flex flex-col gap-4 mb-6">
+                        <div class="flex flex-col gap-2">
                             <p class="text-xs uppercase tracking-wide text-slate-500">Transaction History</p>
-                            <h2 class="text-2xl font-bold text-slate-900">Receipts & Daily Sales</h2>
-                            <p class="text-sm text-slate-500">Review completed sales and reopen digital receipts.</p>
+                            <div class="flex flex-wrap items-center gap-3">
+                                <h2 class="text-2xl font-bold text-slate-900">Receipts & Daily Sales</h2>
+                                <div class="flex flex-wrap gap-2">
+                                    <?php foreach ($history_ranges as $key => $label): ?>
+                                        <a href="?tab=history&range=<?php echo $key; ?>"
+                                           class="px-3 py-2 rounded-full text-xs font-semibold border transition <?php echo $selected_range === $key ? 'bg-red-600 text-white border-red-600 shadow' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'; ?>">
+                                            <?php echo htmlspecialchars($label); ?>
+                                        </a>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
+                            <p class="text-sm text-slate-500">Filter by cashier, receipt #, payment type, and date range.</p>
                         </div>
-                        <div class="flex flex-wrap gap-2">
-                            <?php foreach ($history_ranges as $key => $label): ?>
-                                <a href="?tab=history&range=<?php echo $key; ?>"
-                                   class="px-3 py-2 rounded-full text-xs font-semibold border transition <?php echo $selected_range === $key ? 'bg-red-600 text-white border-red-600 shadow' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'; ?>">
-                                    <?php echo htmlspecialchars($label); ?>
-                                </a>
-                            <?php endforeach; ?>
+
+                        <form method="get" class="flex flex-col md:flex-row md:items-center gap-3 bg-slate-50 border border-slate-200 rounded-2xl p-4">
+                            <input type="hidden" name="tab" value="history">
+                            <input type="hidden" name="range" value="<?php echo htmlspecialchars($selected_range); ?>">
+                            <div class="relative flex-1 min-w-[220px]">
+                                <span class="absolute inset-y-0 left-3 flex items-center text-slate-400">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                                </span>
+                            <input type="text" name="history_search" value="<?php echo htmlspecialchars($history_search); ?>" placeholder="Search receipts or cashier…" class="w-full h-11 rounded-full border border-slate-200 bg-white pl-10 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#D00000]">
                         </div>
+                        <select name="history_payment" class="h-11 px-3 rounded-full border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#D00000]">
+                            <option value="all" <?php echo $history_payment === 'all' ? 'selected' : ''; ?>>All payments</option>
+                            <option value="Cash" <?php echo $history_payment === 'Cash' ? 'selected' : ''; ?>>Cash</option>
+                            <option value="GCash" <?php echo $history_payment === 'GCash' ? 'selected' : ''; ?>>GCash</option>
+                                <option value="Installment" <?php echo $history_payment === 'Installment' ? 'selected' : ''; ?>>Installment</option>
+                            </select>
+                            <button type="submit" class="h-11 px-5 rounded-full bg-[#D00000] text-white text-sm font-semibold hover:bg-red-700 transition">Filter</button>
+                        </form>
                     </div>
 
                     <?php if ($history_result && $history_result->num_rows > 0): ?>

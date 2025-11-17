@@ -2,6 +2,7 @@
 let cart = []
 let paymentType = "Cash"
 let installmentMonths = 6
+const stateKey = "posCatalogState"
 
 const peso = new Intl.NumberFormat("en-PH", {
   style: "currency",
@@ -168,6 +169,25 @@ function selectPayment(method) {
   }
 }
 
+function persistCatalogState(category, search) {
+  try {
+    const state = { category, search }
+    localStorage.setItem(stateKey, JSON.stringify(state))
+  } catch (e) {
+    /* ignore */
+  }
+}
+
+function loadCatalogState() {
+  try {
+    const raw = localStorage.getItem(stateKey)
+    if (!raw) return null
+    return JSON.parse(raw)
+  } catch (e) {
+    return null
+  }
+}
+
 async function proceedToCheckout() {
   if (cart.length === 0) {
     alert("Cart is empty")
@@ -279,4 +299,35 @@ document.addEventListener("DOMContentLoaded", () => {
   setupPaymentSelection()
   setupDiscountInput()
   setupKeyboardShortcuts()
+})
+
+// Persist category/search state when clicking pills or performing search
+document.addEventListener("DOMContentLoaded", () => {
+  const params = new URLSearchParams(window.location.search)
+  const initialCategory = params.get("category") || "All"
+  const initialSearch = params.get("search") || ""
+
+  persistCatalogState(initialCategory, initialSearch)
+
+  document.querySelectorAll(".category-pill").forEach((pill) => {
+    pill.addEventListener("click", () => {
+      const cat = pill.dataset.category || "All"
+      const searchVal = document.getElementById("searchInput")?.value || ""
+      persistCatalogState(cat, searchVal)
+    })
+  })
+
+  const searchInput = document.getElementById("searchInput")
+  const searchBtn = document.getElementById("searchBtn")
+  const applySearch = () => {
+    const cat = initialCategory
+    const searchVal = searchInput?.value || ""
+    persistCatalogState(cat, searchVal)
+  }
+  if (searchInput) {
+    searchInput.addEventListener("change", applySearch)
+  }
+  if (searchBtn) {
+    searchBtn.addEventListener("click", applySearch)
+  }
 })
