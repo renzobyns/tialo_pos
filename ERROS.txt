@@ -1,0 +1,9 @@
+there are so many errors first on the dashboard the download report are currently not working 
+
+on pos module the button of the "catalog""history" redirect to the dashboard or the reseting the link also with the other button like on the filtering all items then the complete sales is not currently working there are error. 
+
+inventory management the buttons there are also not wokring the toggle button the "prpducts" "Shipments" are not working too and just redirect to the first page also it does too on the search button also with the add product and new shipment. 
+
+reports tab all the button redirect to the first page. also can you add on the filtering the reports like all time report cause there are no option for the all time its just the today this week this month or custom but there are no historyu for all
+
+user tab all buttons is not orking at all

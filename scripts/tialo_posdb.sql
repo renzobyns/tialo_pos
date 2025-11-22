@@ -121,6 +121,8 @@ CREATE TABLE `transactions` (
   `total_amount` decimal(10,2) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+ALTER TABLE `transactions` ADD `discount_amount` DECIMAL(10, 2) NOT NULL DEFAULT 0.00 AFTER `total_amount`;
+
 --
 -- Dumping data for table `transactions`
 --
