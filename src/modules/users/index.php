@@ -41,20 +41,10 @@ if (!empty($params)) {
     $users_result = $conn->query($query);
 }
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Management - Tialo Japan Surplus</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        * { font-family: 'Inter', sans-serif; }
-    </style>
-</head>
+<?php
+$page_title = 'User Management - Tialo Japan Surplus';
+include __DIR__ . '/../../includes/page_header.php';
+?>
 <body class="bg-slate-50 flex">
     <!-- Sidebar -->
     <?php include __DIR__ . '/../../includes/sidebar.php'; ?>
@@ -153,5 +143,4 @@ if (!empty($params)) {
             </div>
         </main>
     </div>
-</body>
-</html>
+<?php include __DIR__ . '/../../includes/page_footer.php'; ?>

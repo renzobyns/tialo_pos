@@ -18,15 +18,11 @@ foreach ($cart as $item) {
 }
 $total = $subtotal - $discount;
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Checkout - Tialo Japan Surplus</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
+<?php
+$page_title = 'Checkout - Tialo Japan Surplus';
+$page_styles = '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">';
+include __DIR__ . '/../../includes/page_header.php';
+?>
 <body class="bg-slate-50">
     <?php include __DIR__ . '/../../includes/header.php'; ?>
     
@@ -137,7 +133,7 @@ $total = $subtotal - $discount;
                                 <i class="fas fa-check-circle"></i>
                                 <span>Complete Payment</span>
                             </button>
-                            <a href="index.php" class="w-full flex items-center justify-center space-x-2 bg-slate-300 text-slate-700 px-4 py-3 rounded-lg hover:bg-slate-400 transition font-semibold">
+                            <a href="/index.php?page=pos" class="w-full flex items-center justify-center space-x-2 bg-slate-300 text-slate-700 px-4 py-3 rounded-lg hover:bg-slate-400 transition font-semibold">
                                 <i class="fas fa-times-circle"></i>
                                 <span>Cancel</span>
                             </a>
@@ -150,6 +146,8 @@ $total = $subtotal - $discount;
     
     <?php include __DIR__ . '/../../includes/footer.php'; ?>
     
+<?php
+$page_scripts = <<<EOT
     <script>
         // Show/hide installment details based on payment type
         document.querySelectorAll('input[name="payment_type"]').forEach(radio => {
@@ -159,5 +157,5 @@ $total = $subtotal - $discount;
             });
         });
     </script>
-</body>
-</html>
+EOT;
+?>

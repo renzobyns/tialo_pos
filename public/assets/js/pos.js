@@ -301,7 +301,6 @@ async function proceedToCheckout(button) {
     }
     cart = []
     updateCart()
-    showToast("Sale completed", "success")
     window.location.href = data.receipt_url
   } catch (error) {
     showToast(error.message || "Something went wrong while completing the sale.", "error")

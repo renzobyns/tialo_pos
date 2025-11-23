@@ -111,20 +111,10 @@ if ($tab === 'history') {
     $history_result = $history_stmt->get_result();
 }
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>POS - Tialo Japan Surplus</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        * { font-family: 'Inter', sans-serif; }
-    </style>
-</head>
+<?php
+$page_title = 'POS - Tialo Japan Surplus';
+include __DIR__ . '/../../includes/page_header.php';
+?>
 <body class="bg-slate-50 flex min-h-screen">
     <?php include __DIR__ . '/../../includes/sidebar.php'; ?>
     
@@ -426,31 +416,33 @@ if ($tab === 'history') {
 
         <div id="toastContainer" class="fixed top-4 right-4 z-50 space-y-2"></div>
 
+<?php
+$page_scripts = '
         <script src="/assets/js/pos.js"></script>
         <script>
-        window.POS_PRODUCTS = <?php echo json_encode($product_names); ?>;
+        window.POS_PRODUCTS = ' . json_encode($product_names) . ';
         function performSearch() {
-            const input = document.getElementById('searchInput');
+            const input = document.getElementById(\'searchInput\');
             if (!input) return;
             const params = new URLSearchParams(window.location.search);
             const value = input.value.trim();
             if (value) {
-                params.set('search', value);
+                params.set(\'search\', value);
             } else {
-                params.delete('search');
+                params.delete(\'search\');
             }
-            params.set('tab', 'catalog');
-            window.location.href = '?page=pos&' + params.toString();
+            params.set(\'tab\', \'catalog\');
+            window.location.href = \'?page=pos&\' + params.toString();
         }
-        const searchInput = document.getElementById('searchInput');
+        const searchInput = document.getElementById(\'searchInput\');
         if (searchInput) {
-            searchInput.addEventListener('keydown', function (event) {
-                if (event.key === 'Enter') {
+            searchInput.addEventListener(\'keydown\', function (event) {
+                if (event.key === \'Enter\') {
                     event.preventDefault();
                     performSearch();
                 }
             });
         }
-        </script>
-</body>
-</html>
+        </script>';
+include __DIR__ . '/../../includes/page_footer.php';
+?>

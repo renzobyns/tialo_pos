@@ -22,20 +22,10 @@ if ($shipment_id) {
     $is_edit = true;
 }
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo $is_edit ? 'Edit' : 'Add'; ?> Shipment - Tialo Japan Surplus</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        * { font-family: 'Inter', sans-serif; }
-    </style>
-</head>
+<?php
+$page_title = ($is_edit ? 'Edit' : 'Add') . ' Shipment - Tialo Japan Surplus';
+include __DIR__ . '/../../includes/page_header.php';
+?>
 <body class="bg-slate-50 flex">
     <?php include __DIR__ . '/../../includes/sidebar.php'; ?>
 
@@ -52,7 +42,7 @@ if ($shipment_id) {
                     </h1>
                     <p class="text-sm text-slate-600">Capture every incoming delivery before products move to inventory.</p>
                 </div>
-                <a href="index.php?tab=shipments" class="inline-flex items-center px-4 py-2 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-100 transition">
+                <a href="/index.php?page=inventory&tab=shipments" class="inline-flex items-center px-4 py-2 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-100 transition">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                     </svg>
@@ -156,7 +146,7 @@ if ($shipment_id) {
                     </div>
 
                     <div class="flex items-center justify-end gap-3 pt-6 border-t border-slate-100">
-                        <a href="index.php?tab=shipments" class="px-5 py-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition">Cancel</a>
+                        <a href="/index.php?page=inventory&tab=shipments" class="px-5 py-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition">Cancel</a>
                         <button type="submit" class="px-6 py-2 rounded-lg bg-[#D00000] text-white font-semibold hover:bg-[#9D0208] transition">
                             <?php echo $is_edit ? 'Save Shipment' : 'Create Shipment'; ?>
                         </button>
@@ -165,5 +155,4 @@ if ($shipment_id) {
             </div>
         </main>
     </div>
-</body>
-</html>
+<?php include __DIR__ . '/../../includes/page_footer.php'; ?>

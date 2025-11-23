@@ -61,9 +61,11 @@ if ($action === 'create') {
     $stmt->bind_param("ssidsis", $name, $category, $quantity, $price, $status, $shipment_id, $image_path);
     
     if ($stmt->execute()) {
-        header("Location: index.php?tab=products&success=Product created successfully");
+        $_SESSION['toast_message'] = ['type' => 'success', 'message' => 'Product created successfully.'];
+        header("Location: /index.php?page=inventory&tab=inventory");
     } else {
-        header("Location: product_form.php?error=Failed to create product");
+        $_SESSION['toast_message'] = ['type' => 'error', 'message' => 'Failed to create product.'];
+        header("Location: /index.php?page=inventory/product_form");
     }
     exit();
 }
@@ -102,15 +104,23 @@ elseif ($action === 'update') {
     $stmt->bind_param("ssidsisi", $name, $category, $quantity, $price, $status, $shipment_id, $final_image, $product_id);
     
     if ($stmt->execute()) {
-        header("Location: index.php?tab=products&success=Product updated successfully");
+        $_SESSION['toast_message'] = ['type' => 'success', 'message' => 'Product updated successfully.'];
+        header("Location: /index.php?page=inventory&tab=inventory");
     } else {
-        header("Location: product_form.php?id=$product_id&error=Failed to update product");
+        $_SESSION['toast_message'] = ['type' => 'error', 'message' => 'Failed to update product.'];
+        header("Location: /index.php?page=inventory/product_form&id=$product_id");
     }
     exit();
 }
 
 elseif ($action === 'delete') {
-    $product_id = (int)$_GET['id'];
+    $product_id = (int)($_POST['product_id'] ?? 0);
+    if (!$product_id) {
+        $_SESSION['toast_message'] = ['type' => 'error', 'message' => 'Invalid product ID for deletion.'];
+        header("Location: /index.php?page=inventory&tab=inventory");
+        exit();
+    }
+    
     $current = $conn->prepare("SELECT image FROM products WHERE product_id = ?");
     $current->bind_param("i", $product_id);
     $current->execute();
@@ -123,13 +133,14 @@ elseif ($action === 'delete') {
     
     if ($stmt->execute()) {
         delete_image_file($current_image);
-        header("Location: index.php?tab=products&success=Product deleted successfully");
+        $_SESSION['toast_message'] = ['type' => 'success', 'message' => 'Product deleted successfully.'];
     } else {
-        header("Location: index.php?tab=products&error=Failed to delete product");
+        $_SESSION['toast_message'] = ['type' => 'error', 'message' => 'Failed to delete product.'];
     }
+    header("Location: /index.php?page=inventory&tab=inventory");
     exit();
 }
 
-header("Location: index.php?tab=products");
+header("Location: /index.php?page=inventory&tab=inventory");
 exit();
 ?>

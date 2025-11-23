@@ -79,18 +79,10 @@ function peso($value) {
     return '₱' . number_format((float)$value, 2);
 }
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reports - Tialo Japan Surplus</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>* { font-family: 'Inter', sans-serif; }</style>
-</head>
+<?php
+$page_title = 'Reports - Tialo Japan Surplus';
+include __DIR__ . '/../../includes/page_header.php';
+?>
 <body class="bg-slate-50 flex">
     <?php include __DIR__ . '/../../includes/sidebar.php'; ?>
     <div class="flex-1 flex flex-col">
@@ -342,5 +334,4 @@ function peso($value) {
             <?php endif; ?>
         </main>
     </div>
-</body>
-</html>
+<?php include __DIR__ . '/../../includes/page_footer.php'; ?>

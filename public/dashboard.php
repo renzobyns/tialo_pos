@@ -47,20 +47,10 @@ if ($recent_result = $conn->query($recent_query)) {
     }
 }
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Tialo Japan Surplus</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        * { font-family: 'Inter', sans-serif; }
-    </style>
-</head>
+<?php
+$page_title = 'Dashboard - Tialo Japan Surplus';
+include __DIR__ . '/../src/includes/page_header.php';
+?>
 <body class="bg-slate-50 flex">
     <?php include __DIR__ . '/../src/includes/sidebar.php'; ?>
 
@@ -249,5 +239,4 @@ if ($recent_result = $conn->query($recent_query)) {
         </main>
     </div>
 </div>
-</body>
-</html>
+<?php include __DIR__ . '/../src/includes/page_footer.php'; ?>

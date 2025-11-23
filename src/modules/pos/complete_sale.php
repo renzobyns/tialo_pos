@@ -122,6 +122,12 @@ try {
     }
 
     $conn->commit();
+
+    $_SESSION['toast_message'] = [
+        'type' => 'success',
+        'message' => 'Sale #' . $transaction_id . ' completed successfully!'
+    ];
+
     echo json_encode([
         'success' => true,
         'receipt_url' => "/index.php?page=pos_receipt&transaction_id={$transaction_id}"

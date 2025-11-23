@@ -12,13 +12,10 @@ if (isset($_SESSION['login_error'])) {
     unset($_SESSION['login_error']);
 }
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Tialo Japan Surplus POS</title>
-    <style>
+<?php
+$page_title = 'Login - Tialo Japan Surplus POS';
+$page_styles = <<<EOT
+<style>
       * {
         margin: 0;
         padding: 0;
@@ -204,7 +201,9 @@ if (isset($_SESSION['login_error'])) {
         font-family: 'Monaco', 'Menlo', monospace;
       }
     </style>
-</head>
+EOT;
+include __DIR__ . '/../../includes/page_header.php';
+?>
 <body>
   <div class="login-container">
     <div class="login-card">
@@ -251,5 +250,4 @@ if (isset($_SESSION['login_error'])) {
       </div>
     </div>
   </div>
-</body>
-</html>
+<?php include __DIR__ . '/../../includes/page_footer.php'; ?>

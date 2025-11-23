@@ -69,13 +69,10 @@ try {
     die("Error: " . $e->getMessage());
 }
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Password Reset Utility - Tialo POS</title>
-    <style>
+<?php
+$page_title = 'Password Reset Utility - Tialo POS';
+$page_styles = <<<EOT
+<style>
         * {
             margin: 0;
             padding: 0;
@@ -215,7 +212,9 @@ try {
             margin-left: 10px;
         }
     </style>
-</head>
+EOT;
+include __DIR__ . '/../src/includes/page_header.php';
+?>
 <body>
     <div class="container">
         <h1>Password Reset Utility</h1>
@@ -268,5 +267,4 @@ try {
             </div>
         <?php endif; ?>
     </div>
-</body>
-</html>
+<?php include __DIR__ . '/../src/includes/page_footer.php'; ?>
