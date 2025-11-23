@@ -50,7 +50,10 @@ During the planning phase for cleaning up the project structure, a key architect
 
 ### Changed
 -   **UI/UX:** Increased the size of the "remove item" icon and added padding to its button in the POS cart.
- **Project Structure:** The entire project was restructured into two main directories: `public/` (for web-accessible files) and `src/` (for all PHP application logic).
+
+### Fixed
+-   **POS Cart:** The cart now persists across page reloads and category navigation. It no longer empties unexpectedly.
+**Project Structure:** The entire project was restructured into two main directories: `public/` (for web-accessible files) and `src/` (for all PHP application logic).
 - **URL Handling:** All hardcoded URLs, HTML form actions, and PHP `header()` redirects were refactored to use the new router-based URL system (e.g., `/index.php?page=users`).
 - **Include Paths:** All `include` and `require` statements were updated to use robust, absolute paths based on the `__DIR__` magic constant to prevent path resolution errors.
 - **Session Handling:** Redundant `session_start()` calls were removed from included files, as the session is now reliably started once in the front controller.

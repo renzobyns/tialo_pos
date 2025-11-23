@@ -5,7 +5,38 @@ let installmentMonths = 6
 const stateKey = "posCatalogState"
 const suggestionLimit = 8
 const holdKey = "posHeldCart"
+const sessionCartKey = "posActiveCart"
 const toastDuration = 3000
+
+function saveCartToSession() {
+  const discountInput = document.getElementById("discountAmount")
+  const discount = Number.parseFloat(discountInput?.value) || 0
+  const data = {
+    cart,
+    discount,
+    paymentType,
+    installmentMonths,
+  }
+  sessionStorage.setItem(sessionCartKey, JSON.stringify(data))
+}
+
+function loadCartFromSession() {
+  try {
+    const raw = sessionStorage.getItem(sessionCartKey)
+    if (!raw) return
+    const data = JSON.parse(raw)
+    cart = Array.isArray(data.cart) ? data.cart : []
+    paymentType = data.paymentType || "Cash"
+    installmentMonths = data.installmentMonths || 6
+    const discountInput = document.getElementById("discountAmount")
+    if (discountInput) {
+      discountInput.value = data.discount || ""
+    }
+  } catch (e) {
+    console.error("Could not load cart from session:", e)
+    cart = [] // Reset on error
+  }
+}
 
 const peso = new Intl.NumberFormat("en-PH", {
   style: "currency",
@@ -102,12 +133,14 @@ function addToCart(productId, name, price, stock) {
   }
 
   updateCart();
+  saveCartToSession();
 }
 
 function increaseQty(index) {
   cart[index].quantity++
   cart[index].subtotal = cart[index].quantity * cart[index].price
   updateCart()
+  saveCartToSession()
 }
 
 function decreaseQty(index) {
@@ -115,6 +148,7 @@ function decreaseQty(index) {
     cart[index].quantity--
     cart[index].subtotal = cart[index].quantity * cart[index].price
     updateCart()
+    saveCartToSession()
   }
 }
 
@@ -124,12 +158,14 @@ function setQty(index, qty) {
     cart[index].quantity = qty
     cart[index].subtotal = cart[index].quantity * cart[index].price
     updateCart()
+    saveCartToSession()
   }
 }
 
 function removeFromCart(index) {
   cart.splice(index, 1)
   updateCart()
+  saveCartToSession()
 }
 
 function clearCart() {
@@ -137,6 +173,7 @@ function clearCart() {
   if (confirm("Remove all items from the cart?")) {
     cart = []
     updateCart()
+    saveCartToSession()
   }
 }
 
@@ -188,6 +225,7 @@ function selectPayment(method) {
   if (installmentBlock) {
     installmentBlock.classList.toggle("hidden", method !== "Installment")
   }
+  saveCartToSession()
 }
 
 function persistCatalogState(category, search) {
@@ -311,6 +349,7 @@ async function proceedToCheckout(button) {
     }
     cart = []
     updateCart()
+    saveCartToSession()
     showToast("Sale completed successfully!", "success")
     setTimeout(() => {
       window.location.href = data.receipt_url
@@ -337,6 +376,7 @@ function setupPaymentSelection() {
     installmentMonths = Number.parseInt(installmentSelect.value, 10) || 6
     installmentSelect.addEventListener("change", (event) => {
       installmentMonths = Number.parseInt(event.target.value, 10) || 6
+      saveCartToSession()
     })
   }
 }
@@ -403,11 +443,14 @@ function setupDiscountInput() {
     }
     showDiscountError("")
     updateTotal()
+    saveCartToSession()
   })
 }
 
 // Initialize interactions once DOM is ready
 document.addEventListener("DOMContentLoaded", () => {
+  loadCartFromSession()
+  updateCart()
   setupPaymentSelection()
   setupDiscountInput()
   setupKeyboardShortcuts()
