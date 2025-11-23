@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Rationale: Remove 'Settings' tab from sidebar
+
+*   **Chosen Approach:** The 'Settings' tab was removed from the sidebar navigation.
+*   **Reason for Decision:** The application currently does not have any user-facing settings that require a dedicated navigation tab. Removing it simplifies the UI and reduces clutter.
+
+### Removed
+-   **UI:** 'Settings' tab removed from the sidebar navigation for all user roles.
+
 ### Added
 - 
 
