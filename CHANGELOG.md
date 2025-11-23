@@ -49,7 +49,8 @@ During the planning phase for cleaning up the project structure, a key architect
 - **Implemented Front Controller Pattern:** All web server traffic is now directed to `public/index.php`. The server's document root should be pointed *only* to the `public/` directory, preventing any direct web access to PHP logic, configuration files, or other sensitive assets in the `src/` directory.
 
 ### Changed
-- **Project Structure:** The entire project was restructured into two main directories: `public/` (for web-accessible files) and `src/` (for all PHP application logic).
+-   **UI/UX:** Increased the size of the "remove item" icon and added padding to its button in the POS cart.
+ **Project Structure:** The entire project was restructured into two main directories: `public/` (for web-accessible files) and `src/` (for all PHP application logic).
 - **URL Handling:** All hardcoded URLs, HTML form actions, and PHP `header()` redirects were refactored to use the new router-based URL system (e.g., `/index.php?page=users`).
 - **Include Paths:** All `include` and `require` statements were updated to use robust, absolute paths based on the `__DIR__` magic constant to prevent path resolution errors.
 - **Session Handling:** Redundant `session_start()` calls were removed from included files, as the session is now reliably started once in the front controller.

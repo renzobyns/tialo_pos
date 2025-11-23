@@ -51,8 +51,8 @@ function updateCart() {
               <p class="text-sm font-semibold text-slate-900">${item.name}</p>
               <p class="text-xs text-slate-500">${formatPeso(item.price)}</p>
             </div>
-            <button class="text-slate-400 hover:text-red-600 transition" onclick="removeFromCart(${index})" title="Remove item">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <button class="text-slate-400 hover:text-red-600 transition p-1" onclick="removeFromCart(${index})" title="Remove item">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 7h12M10 11v6m4-6v6M9 7l1-3h4l1 3m-7 0h8l-1 12H10z"></path>
               </svg>
             </button>
