@@ -28,10 +28,18 @@ function updateCart() {
   if (!cartItemsDiv || !cartCountSpan) return
 
   if (cart.length === 0) {
-    cartItemsDiv.innerHTML = '<p class="text-slate-500 text-sm text-center py-8">Cart is empty</p>'
-    cartCountSpan.textContent = "0"
-    updateTotal()
-    return
+    cartItemsDiv.innerHTML = `
+      <div class="text-slate-500 text-sm text-center py-8">
+        <svg class="w-10 h-10 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
+        </svg>
+        <p class="font-semibold mb-1">Your cart is empty.</p>
+        <p class="text-xs">Add products from the catalog to get started!</p>
+      </div>
+    `;
+    cartCountSpan.textContent = "0";
+    updateTotal();
+    return;
   }
 
   cartItemsDiv.innerHTML = cart
@@ -68,18 +76,19 @@ function updateCart() {
 
 function addToCart(productId, name, price, stock) {
   if (stock <= 0) {
-    alert("Product is out of stock")
-    return
+    showToast("Product is out of stock", "error");
+    return;
   }
 
-  const existingItem = cart.find((item) => item.product_id === productId)
+  const existingItem = cart.find((item) => item.product_id === productId);
 
   if (existingItem) {
     if (existingItem.quantity < stock) {
-      existingItem.quantity++
-      existingItem.subtotal = existingItem.quantity * existingItem.price
+      existingItem.quantity++;
+      existingItem.subtotal = existingItem.quantity * existingItem.price;
+      showToast("Product quantity updated in cart!", "success");
     } else {
-      alert("Cannot exceed available stock")
+      showToast("Cannot exceed available stock", "error");
     }
   } else {
     cart.push({
@@ -88,10 +97,11 @@ function addToCart(productId, name, price, stock) {
       price,
       quantity: 1,
       subtotal: price,
-    })
+    });
+    showToast("Product added to cart!", "success");
   }
 
-  updateCart()
+  updateCart();
 }
 
 function increaseQty(index) {
@@ -301,7 +311,10 @@ async function proceedToCheckout(button) {
     }
     cart = []
     updateCart()
-    window.location.href = data.receipt_url
+    showToast("Sale completed successfully!", "success")
+    setTimeout(() => {
+      window.location.href = data.receipt_url
+    }, toastDuration / 2) // Redirect after half the toast duration
   } catch (error) {
     showToast(error.message || "Something went wrong while completing the sale.", "error")
   } finally {
@@ -328,8 +341,20 @@ function setupPaymentSelection() {
   }
 }
 
+function toggleShortcutsModal() {
+  const modal = document.getElementById("shortcutsModal")
+  if (modal) {
+    modal.classList.toggle("hidden")
+  }
+}
+
 function setupKeyboardShortcuts() {
   document.addEventListener("keydown", (event) => {
+    if (event.key === "F1") {
+      event.preventDefault()
+      toggleShortcutsModal()
+      return
+    }
     if (event.key === "F2") {
       event.preventDefault()
       document.getElementById("searchInput")?.focus()
@@ -349,7 +374,23 @@ function setupKeyboardShortcuts() {
       event.preventDefault()
       selectPayment("Installment")
     }
+    // Close modal on Escape key
+    if (event.key === "Escape") {
+        const modal = document.getElementById("shortcutsModal");
+        if (modal && !modal.classList.contains("hidden")) {
+            toggleShortcutsModal();
+        }
+    }
   })
+  // Close modal on outside click
+  const modal = document.getElementById("shortcutsModal");
+  if (modal) {
+      modal.addEventListener('click', (event) => {
+          if (event.target === modal) {
+              toggleShortcutsModal();
+          }
+      });
+  }
 }
 
 function setupDiscountInput() {

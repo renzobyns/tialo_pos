@@ -15,14 +15,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 -   **UI:** 'Settings' tab removed from the sidebar navigation for all user roles.
 
+### Rationale: Improve UI/UX of POS system
+
+*   **Chosen Approach:** Implemented visual feedback for user actions, enhanced empty states, and added keyboard shortcut discoverability in the Point of Sale (POS) system.
+*   **Reason for Decision:** These changes improve the overall usability, provide clearer communication to the user about their interactions, and enhance efficiency for power users through better shortcut visibility.
+
 ### Added
-- 
+-   **UI/UX:** Implemented toast notifications for `addToCart` and `proceedToCheckout` actions in the POS system for clearer visual feedback.
+-   **UI/UX:** Enhanced the "Cart is empty" display in the POS system with an icon and more guiding text.
+-   **UI/UX:** Added a keyboard shortcuts modal in the POS system, accessible via `F1`, to improve discoverability of shortcuts.
 
-### Changed
--
-
-### Fixed
-- 
 
 ---
 

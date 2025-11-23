@@ -416,6 +416,42 @@ include __DIR__ . '/../../includes/page_header.php';
 
         <div id="toastContainer" class="fixed top-4 right-4 z-50 space-y-2"></div>
 
+        <!-- Keyboard Shortcuts Modal -->
+        <div id="shortcutsModal" class="hidden fixed inset-0 bg-slate-900 bg-opacity-50 z-[100] flex items-center justify-center p-4" aria-modal="true" role="dialog">
+            <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 relative">
+                <h3 class="text-xl font-bold text-slate-900 mb-4">Keyboard Shortcuts</h3>
+                <button type="button" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600" onclick="toggleShortcutsModal()">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+                <div class="space-y-3 text-sm">
+                    <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+                        <span class="font-medium text-slate-700">Open/Close Shortcuts</span>
+                        <kbd class="kbd">F1</kbd>
+                    </div>
+                    <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+                        <span class="font-medium text-slate-700">Focus Search Input</span>
+                        <kbd class="kbd">F2</kbd>
+                    </div>
+                    <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+                        <span class="font-medium text-slate-700">Select Cash Payment</span>
+                        <kbd class="kbd">F3</kbd>
+                    </div>
+                    <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+                        <span class="font-medium text-slate-700">Select GCash Payment</span>
+                        <kbd class="kbd">F4</kbd>
+                    </div>
+                    <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+                        <span class="font-medium text-slate-700">Select Installment Payment</span>
+                        <kbd class="kbd">F5</kbd>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="font-medium text-slate-700">Complete Sale</span>
+                        <kbd class="kbd">F9</kbd>
+                    </div>
+                </div>
+            </div>
+        </div>
+
 <?php
 $page_scripts = '
         <script src="/assets/js/pos.js"></script>
