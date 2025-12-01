@@ -4,7 +4,7 @@ checkRole('Admin');
 include __DIR__ . '/../../includes/db_connect.php';
 
 $action = $_POST['action'] ?? $_GET['action'] ?? '';
-$upload_dir = __DIR__ . '/../../assets/img/products/';
+$upload_dir = dirname(__DIR__, 3) . '/public/assets/img/products/';
 $upload_rel = 'products/';
 $max_size = 4 * 1024 * 1024; // 4 MB
 $allowed_types = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'];
@@ -14,29 +14,32 @@ function handle_upload($file, $upload_dir, $upload_rel, $max_size, $allowed_type
         return [null, null];
     }
     if ($file['error'] !== UPLOAD_ERR_OK) {
-        return [null, 'Upload failed.'];
+        return [null, 'Upload failed with error code ' . $file['error']];
     }
     if ($file['size'] > $max_size) {
-        return [null, 'File too large.'];
+        return [null, 'File too large. Max is 4 MB.'];
+    }
+    if (!is_dir($upload_dir) || !is_writable($upload_dir)) {
+        return [null, 'Upload directory is not writable. Check server permissions.'];
     }
     $finfo = finfo_open(FILEINFO_MIME_TYPE);
     $mime = finfo_file($finfo, $file['tmp_name']);
     finfo_close($finfo);
     if (!isset($allowed_types[$mime])) {
-        return [null, 'Invalid file type.'];
+        return [null, 'Invalid file type. Only JPG, PNG, and WebP are allowed.'];
     }
     $ext = $allowed_types[$mime];
     $filename = uniqid('product_', true) . '.' . $ext;
     $target = rtrim($upload_dir, '/') . '/' . $filename;
     if (!move_uploaded_file($file['tmp_name'], $target)) {
-        return [null, 'Could not save file.'];
+        return [null, 'Could not save uploaded file. Check server permissions.'];
     }
     return [$upload_rel . $filename, null];
 }
 
 function delete_image_file($path) {
     if (!$path) return;
-    $full = __DIR__ . '/../../assets/img/' . ltrim($path, '/');
+    $full = dirname(__DIR__, 3) . '/public/assets/img/' . ltrim($path, '/');
     if (is_file($full)) {
         @unlink($full);
     }

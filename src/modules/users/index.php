@@ -98,7 +98,7 @@ include __DIR__ . '/../../includes/page_header.php';
                 </div>
             </div>
             
-            <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+            <div class="bg-white rounded-xl border border-slate-200 overflow-x-auto">
                 <table class="w-full">
                     <thead>
                         <tr class="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase">

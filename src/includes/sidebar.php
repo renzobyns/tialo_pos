@@ -318,8 +318,12 @@ if ($_SESSION['role'] === 'Admin') {
   }
 </style>
 
-<aside class="sidebar">
-  <button class="sidebar-collapse-btn" id="sidebarToggle" type="button">
+<aside class="sidebar" id="mobileSidebar">
+  <!-- Close button for mobile -->
+  <button class="absolute top-2 right-2 md:hidden" id="closeSidebarButton">
+    <i class="fas fa-times text-white text-2xl"></i>
+  </button>
+  <button class="sidebar-collapse-btn hidden md:flex" id="sidebarToggle" type="button">
     <span>Navigation</span>
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
       <path d="M4 12h16M4 6h16M4 18h16"/>
@@ -386,8 +390,11 @@ if ($_SESSION['role'] === 'Admin') {
     </a>
   </div>
 </aside>
+<!-- Sidebar Overlay -->
+<div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-49 hidden md:hidden"></div>
 <script>
   (function () {
+    // Desktop sidebar collapse
     const toggle = document.getElementById('sidebarToggle');
     const body = document.body;
     if (localStorage.getItem('sidebar-collapsed') === 'true') {
@@ -398,6 +405,27 @@ if ($_SESSION['role'] === 'Admin') {
         body.classList.toggle('sidebar-collapsed');
         localStorage.setItem('sidebar-collapsed', body.classList.contains('sidebar-collapsed'));
       });
+    }
+
+    // Mobile sidebar toggle
+    const mobileMenuButton = document.getElementById('mobileMenuButton');
+    const closeSidebarButton = document.getElementById('closeSidebarButton');
+    const sidebar = document.getElementById('mobileSidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+
+    if (mobileMenuButton && sidebar && overlay) {
+      mobileMenuButton.addEventListener('click', function() {
+        sidebar.classList.add('open');
+        overlay.classList.remove('hidden');
+      });
+
+      const closeAction = function() {
+        sidebar.classList.remove('open');
+        overlay.classList.add('hidden');
+      };
+
+      closeSidebarButton.addEventListener('click', closeAction);
+      overlay.addEventListener('click', closeAction);
     }
   })();
 </script>

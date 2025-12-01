@@ -146,30 +146,32 @@ include __DIR__ . '/../src/includes/page_header.php';
                         </div>
                         <span class="text-sm font-semibold text-slate-500">Qty</span>
                     </div>
-                    <table class="w-full text-sm">
-                        <thead class="bg-slate-50 text-slate-500 uppercase text-xs">
-                            <tr>
-                                <th class="px-6 py-3 text-left">Product</th>
-                                <th class="px-6 py-3 text-center">Qty</th>
-                                <th class="px-6 py-3 text-right">Revenue</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-100">
-                            <?php if (!empty($top_products)): ?>
-                                <?php foreach ($top_products as $product): ?>
-                                    <tr class="hover:bg-slate-50">
-                                        <td class="px-6 py-3 font-medium text-slate-900"><?php echo htmlspecialchars($product['name']); ?></td>
-                                        <td class="px-6 py-3 text-center font-semibold text-slate-700"><?php echo (int) $product['qty_sold']; ?></td>
-                                        <td class="px-6 py-3 text-right font-semibold text-red-600">₱<?php echo number_format($product['revenue'], 2); ?></td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            <?php else: ?>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead class="bg-slate-50 text-slate-500 uppercase text-xs">
                                 <tr>
-                                    <td colspan="3" class="px-6 py-6 text-center text-slate-500">No sales recorded today.</td>
+                                    <th class="px-6 py-3 text-left">Product</th>
+                                    <th class="px-6 py-3 text-center">Qty</th>
+                                    <th class="px-6 py-3 text-right">Revenue</th>
                                 </tr>
-                            <?php endif; ?>
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                <?php if (!empty($top_products)): ?>
+                                    <?php foreach ($top_products as $product): ?>
+                                        <tr class="hover:bg-slate-50">
+                                            <td class="px-6 py-3 font-medium text-slate-900"><?php echo htmlspecialchars($product['name']); ?></td>
+                                            <td class="px-6 py-3 text-center font-semibold text-slate-700"><?php echo (int) $product['qty_sold']; ?></td>
+                                            <td class="px-6 py-3 text-right font-semibold text-red-600">₱<?php echo number_format($product['revenue'], 2); ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <tr>
+                                        <td colspan="3" class="px-6 py-6 text-center text-slate-500">No sales recorded today.</td>
+                                    </tr>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
                 <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
@@ -180,32 +182,34 @@ include __DIR__ . '/../src/includes/page_header.php';
                         </div>
                         <span class="text-sm font-semibold text-red-600">Action needed</span>
                     </div>
-                    <table class="w-full text-sm">
-                        <thead class="bg-slate-50 text-slate-500 uppercase text-xs">
-                            <tr>
-                                <th class="px-6 py-3 text-left">Product</th>
-                                <th class="px-6 py-3 text-center">Stock</th>
-                                <th class="px-6 py-3 text-right">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-100">
-                            <?php if (!empty($low_stock_items)): ?>
-                                <?php foreach ($low_stock_items as $item): ?>
-                                    <tr class="hover:bg-slate-50">
-                                        <td class="px-6 py-3 font-medium text-slate-900"><?php echo htmlspecialchars($item['name']); ?></td>
-                                        <td class="px-6 py-3 text-center font-semibold text-slate-700"><?php echo (int) $item['quantity']; ?></td>
-                                        <td class="px-6 py-3 text-right">
-                                            <span class="px-3 py-1 rounded-full text-xs font-semibold bg-red-50 text-red-600">Low Stock</span>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            <?php else: ?>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead class="bg-slate-50 text-slate-500 uppercase text-xs">
                                 <tr>
-                                    <td colspan="3" class="px-6 py-6 text-center text-slate-500">All stock levels look healthy.</td>
+                                    <th class="px-6 py-3 text-left">Product</th>
+                                    <th class="px-6 py-3 text-center">Stock</th>
+                                    <th class="px-6 py-3 text-right">Status</th>
                                 </tr>
-                            <?php endif; ?>
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                <?php if (!empty($low_stock_items)): ?>
+                                    <?php foreach ($low_stock_items as $item): ?>
+                                        <tr class="hover:bg-slate-50">
+                                            <td class="px-6 py-3 font-medium text-slate-900"><?php echo htmlspecialchars($item['name']); ?></td>
+                                            <td class="px-6 py-3 text-center font-semibold text-slate-700"><?php echo (int) $item['quantity']; ?></td>
+                                            <td class="px-6 py-3 text-right">
+                                                <span class="px-3 py-1 rounded-full text-xs font-semibold bg-red-50 text-red-600">Low Stock</span>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <tr>
+                                        <td colspan="3" class="px-6 py-6 text-center text-slate-500">All stock levels look healthy.</td>
+                                    </tr>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 

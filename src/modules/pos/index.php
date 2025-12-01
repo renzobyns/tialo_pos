@@ -198,18 +198,15 @@ include __DIR__ . '/../../includes/page_header.php';
                                 <?php 
                                 if ($products_result && $products_result->num_rows > 0) {
                                 while ($product = $products_result->fetch_assoc()):
-                                    $raw_image = trim($product['image'] ?? '');
                                     $img_src = $placeholder;
-                                    if ($raw_image) {
-                                        if (preg_match('/^https?:\\/\\//i', $raw_image)) {
-                                            $img_src = $raw_image;
+                                    if (!empty($product['image'])) {
+                                        $image_path = '/assets/img/' . htmlspecialchars($product['image']);
+                                        // Basic cache busting
+                                        $full_image_path = dirname(__DIR__, 3) . '/public' . $image_path;
+                                        if (file_exists($full_image_path)) {
+                                            $img_src = $image_path . '?v=' . filemtime($full_image_path);
                                         } else {
-                                            $basename = basename(str_replace('\\', '/', $raw_image));
-                                            if ($basename && preg_match('/\\.(jpe?g|png|webp)$/i', $basename)) {
-                                                $abs = __DIR__ . '/../../assets/img/products/' . $basename;
-                                                $version = is_file($abs) ? '?v=' . filemtime($abs) : '';
-                                                $img_src = $img_base_url . $basename . $version;
-                                            }
+                                            $img_src = $image_path;
                                         }
                                     }
                                     ?>
@@ -260,7 +257,6 @@ include __DIR__ . '/../../includes/page_header.php';
                             <div class="flex items-center justify-between gap-3">
                                 <div>
                                     <h2 class="text-lg font-semibold text-slate-900">Shopping Cart</h2>
-                                    <p class="text-xs text-slate-500">Quick: + add qty · - remove qty · Del remove item</p>
                                 </div>
                                 <span id="cartCount" class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-slate-900 text-white text-sm font-semibold">0</span>
                             </div>
