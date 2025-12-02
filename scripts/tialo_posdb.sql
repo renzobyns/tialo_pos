@@ -309,3 +309,28 @@ COMMIT;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+
+ D E L I M I T E R   
+ 
+ C R E A T E   T R I G G E R   a f t e r _ t r a n s a c t i o n _ i t e m _ i n s e r t 
+ A F T E R   I N S E R T   O N   t r a n s a c t i o n _ i t e m s 
+ F O R   E A C H   R O W 
+ B E G I N 
+         D E C L A R E   p r o d u c t _ q u a n t i t y   I N T ; 
+ 
+         - -   G e t   t h e   c u r r e n t   q u a n t i t y   o f   t h e   p r o d u c t 
+         S E L E C T   q u a n t i t y   I N T O   p r o d u c t _ q u a n t i t y 
+         F R O M   p r o d u c t s 
+         W H E R E   p r o d u c t _ i d   =   N E W . p r o d u c t _ i d ; 
+ 
+         - -   I f   t h e   q u a n t i t y   i s   0 ,   u p d a t e   t h e   s t a t u s   t o   ' O u t   o f   S t o c k ' 
+         I F   p r o d u c t _ q u a n t i t y   =   0   T H E N 
+                 U P D A T E   p r o d u c t s 
+                 S E T   s t a t u s   =   ' O u t   o f   S t o c k ' 
+                 W H E R E   p r o d u c t _ i d   =   N E W . p r o d u c t _ i d ; 
+         E N D   I F ; 
+ E N D 
+ 
+ D E L I M I T E R   ; 
+  
+ 

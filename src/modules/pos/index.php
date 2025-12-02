@@ -31,7 +31,7 @@ if ($category !== 'All') {
 
 if (!empty($search)) {
     $search = sanitize($search);
-    $query .= " AND name LIKE '%$search%'";
+    $query .= " AND (name LIKE '%$search%' OR product_id LIKE '%$search%')";
 }
 
 if ($sort === 'lowstock') {
@@ -198,6 +198,7 @@ include __DIR__ . '/../../includes/page_header.php';
                                 <?php 
                                 if ($products_result && $products_result->num_rows > 0) {
                                 while ($product = $products_result->fetch_assoc()):
+                                    $is_out_of_stock = (int)$product['quantity'] === 0;
                                     $img_src = $placeholder;
                                     if (!empty($product['image'])) {
                                         $image_path = '/assets/img/' . htmlspecialchars($product['image']);
@@ -210,21 +211,38 @@ include __DIR__ . '/../../includes/page_header.php';
                                         }
                                     }
                                     ?>
-                                <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm hover:shadow-lg hover:-translate-y-1 transition flex flex-col gap-4">
-                                    <div class="aspect-video rounded-xl bg-slate-100 overflow-hidden">
+                                <div class="bg-white rounded-2xl border p-4 shadow-sm flex flex-col gap-4 transition-all duration-300 <?php echo $is_out_of_stock ? 'border-slate-200 bg-slate-50' : 'border-slate-200 hover:shadow-lg hover:-translate-y-1'; ?>">
+                                    <div class="aspect-video rounded-xl bg-slate-100 overflow-hidden relative">
+                                        <?php if ($is_out_of_stock): ?>
+                                            <div class="absolute inset-0 bg-white bg-opacity-70 flex items-center justify-center z-10">
+                                                <span class="text-lg font-bold text-slate-500">Out of Stock</span>
+                                            </div>
+                                        <?php endif; ?>
                                         <img src="<?php echo $img_src; ?>" 
                                             alt="<?php echo htmlspecialchars($product['name']); ?>"
-                                            class="w-full h-full object-cover" loading="lazy" style="max-height: 260px;">
+                                            class="w-full h-full object-cover <?php echo $is_out_of_stock ? 'opacity-40 grayscale' : ''; ?>" loading="lazy" style="max-height: 260px;">
                                     </div>
                                     <div class="space-y-1">
                                             <div class="flex items-center justify-between text-[11px] uppercase tracking-wide text-slate-500">
                                                 <span><?php echo htmlspecialchars($product['category'] ?: 'Uncategorized'); ?></span>
-                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full <?php echo (int)$product['quantity'] <= $low_stock_threshold ? 'bg-amber-100 text-amber-700 font-semibold' : 'bg-slate-100 text-slate-600'; ?>">
-                                                    <?php if ((int)$product['quantity'] <= $low_stock_threshold): ?>
-                                                        Low stock
-                                                    <?php else: ?>
-                                                        Stock: <?php echo (int) $product['quantity']; ?>
-                                                    <?php endif; ?>
+                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-semibold <?php 
+                                                    if ($is_out_of_stock) {
+                                                        echo 'bg-red-100 text-red-700';
+                                                    } elseif ((int)$product['quantity'] <= $low_stock_threshold) {
+                                                        echo 'bg-amber-100 text-amber-700';
+                                                    } else {
+                                                        echo 'bg-slate-100 text-slate-600';
+                                                    }
+                                                ?>">
+                                                    <?php 
+                                                    if ($is_out_of_stock) {
+                                                        echo 'Out of stock';
+                                                    } elseif ((int)$product['quantity'] <= $low_stock_threshold) {
+                                                        echo 'Low stock';
+                                                    } else {
+                                                        echo 'Stock: ' . (int) $product['quantity'];
+                                                    }
+                                                    ?>
                                                 </span>
                                             </div>
                                             <h3 class="text-base font-semibold text-slate-900 truncate"><?php echo htmlspecialchars($product['name']); ?></h3>
@@ -234,13 +252,21 @@ include __DIR__ . '/../../includes/page_header.php';
                                         <span class="text-xs text-slate-500">ID <?php echo (int) $product['product_id']; ?></span>
                                     </div>
                                     <button 
-                                        class="mt-auto inline-flex items-center justify-center gap-2 h-11 rounded-2xl bg-slate-900 text-white text-sm font-semibold hover:bg-black transition"
+                                        class="mt-auto inline-flex items-center justify-center gap-2 h-11 rounded-2xl text-sm font-semibold transition <?php echo $is_out_of_stock ? 'bg-slate-200 text-slate-500 cursor-not-allowed' : 'bg-slate-900 text-white hover:bg-black'; ?>"
                                         onclick="addToCart(<?php echo (int) $product['product_id']; ?>, '<?php echo htmlspecialchars($product['name'], ENT_QUOTES); ?>', <?php echo (float) $product['price']; ?>, <?php echo (int) $product['quantity']; ?>)"
+                                        <?php echo $is_out_of_stock ? 'disabled' : ''; ?>
                                     >
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                                        </svg>
-                                        <span>Add to Cart</span>
+                                        <?php if ($is_out_of_stock): ?>
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path>
+                                            </svg>
+                                            <span>Unavailable</span>
+                                        <?php else: ?>
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                            </svg>
+                                            <span>Add to Cart</span>
+                                        <?php endif; ?>
                                     </button>
                                 </div>
                             <?php endwhile;

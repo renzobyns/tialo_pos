@@ -517,13 +517,13 @@ document.addEventListener("DOMContentLoaded", () => {
         hideSuggestions()
         return
       }
-      const matches = products.filter((p) => p.name && p.name.toLowerCase().includes(term))
+      const matches = products.filter(p => (p.name && p.name.toLowerCase().includes(term)) || (p.id && p.id.toString().toLowerCase().includes(term)))
       showSuggestions(matches)
     })
     searchInput.addEventListener("focus", () => {
       const term = searchInput.value.trim().toLowerCase()
       if (!term) return
-      const matches = products.filter((p) => p.name && p.name.toLowerCase().includes(term))
+      const matches = products.filter(p => (p.name && p.name.toLowerCase().includes(term)) || (p.id && p.id.toString().toLowerCase().includes(term)))
       showSuggestions(matches)
     })
     searchInput.addEventListener("blur", () => {

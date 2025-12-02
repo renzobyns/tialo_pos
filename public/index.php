@@ -39,6 +39,7 @@ $allowed_pages = [
     'reports/inventory' => '../src/modules/reports/inventory_report.php',
     'reports/installment' => '../src/modules/reports/installment_report.php',
     'reports/export' => '../src/modules/reports/export.php',
+    'reports/process_installment' => '../src/modules/reports/process_installment_payment.php',
     
     // Users
     'users' => '../src/modules/users/index.php',

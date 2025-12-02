@@ -40,6 +40,12 @@ if ($payment_type !== 'All') {
     $total_query .= " AND t.payment_type = '$payment_type'";
 }
 $total_result = $conn->query($total_query)->fetch_assoc();
+
+// Calculate average ticket
+$average_ticket = 0;
+if (!empty($total_result['transaction_count'])) {
+    $average_ticket = $total_result['total_sales'] / $total_result['transaction_count'];
+}
 ?>
 
 <div class="sales-report space-y-6">
@@ -103,7 +109,7 @@ $total_result = $conn->query($total_query)->fetch_assoc();
     </div>
     
     <!-- Summary Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-lg p-8 text-white">
             <div class="flex items-center justify-between">
                 <div>
@@ -121,6 +127,16 @@ $total_result = $conn->query($total_query)->fetch_assoc();
                     <p class="text-4xl font-bold"><?php echo $total_result['transaction_count'] ?? 0; ?></p>
                 </div>
                 <i class="fas fa-receipt text-purple-200 text-5xl opacity-50"></i>
+            </div>
+        </div>
+
+        <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-lg shadow-lg p-8 text-white">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-green-100 font-semibold">Average Ticket Size</p>
+                    <p class="text-4xl font-bold">₱<?php echo number_format($average_ticket, 2); ?></p>
+                </div>
+                <i class="fas fa-ticket-alt text-green-200 text-5xl opacity-50"></i>
             </div>
         </div>
     </div>

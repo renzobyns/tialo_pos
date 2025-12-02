@@ -50,7 +50,7 @@ if ($action === 'create') {
     $category = sanitize($_POST['category']);
     $quantity = (int)$_POST['quantity'];
     $price = (float)$_POST['price'];
-    $status = sanitize($_POST['status']);
+    $status = ($quantity > 0) ? 'Available' : 'Out of Stock';
     $shipment_id = !empty($_POST['shipment_id']) ? (int)$_POST['shipment_id'] : null;
     [$image_path, $upload_error] = handle_upload($_FILES['image'] ?? [], $upload_dir, $upload_rel, $max_size, $allowed_types);
     if ($upload_error) {
@@ -79,7 +79,7 @@ elseif ($action === 'update') {
     $category = sanitize($_POST['category']);
     $quantity = (int)$_POST['quantity'];
     $price = (float)$_POST['price'];
-    $status = sanitize($_POST['status']);
+    $status = ($quantity > 0) ? 'Available' : 'Out of Stock';
     $shipment_id = !empty($_POST['shipment_id']) ? (int)$_POST['shipment_id'] : null;
     $current = $conn->prepare("SELECT image FROM products WHERE product_id = ?");
     $current->bind_param("i", $product_id);

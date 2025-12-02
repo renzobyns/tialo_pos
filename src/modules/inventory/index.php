@@ -92,8 +92,23 @@ include __DIR__ . '/../../includes/page_header.php';
                                             <td class="px-6 py-3 text-slate-900 font-semibold"><?php echo (int)$product['quantity']; ?> pcs</td>
                                             <td class="px-6 py-3 text-slate-900 font-semibold">₱<?php echo number_format($product['price'], 2); ?></td>
                                             <td class="px-6 py-3">
-                                                <span class="px-3 py-1 rounded-full text-xs font-semibold <?php echo $product['status'] === 'Available' ? 'bg-emerald-50 text-emerald-700' : ($product['status'] === 'Sold' ? 'bg-blue-50 text-blue-700' : 'bg-amber-50 text-amber-700'); ?>">
-                                                    <?php echo $product['status']; ?>
+                                                <?php 
+                                                    $status = $product['status'];
+                                                    $quantity = (int)$product['quantity'];
+                                                    if ($quantity === 0) {
+                                                        $status = 'Out of Stock';
+                                                    }
+                                                ?>
+                                                <span class="px-3 py-1 rounded-full text-xs font-semibold <?php 
+                                                    if ($status === 'Available') {
+                                                        echo 'bg-emerald-50 text-emerald-700';
+                                                    } elseif ($status === 'Sold') {
+                                                        echo 'bg-blue-50 text-blue-700';
+                                                    } else {
+                                                        echo 'bg-red-100 text-red-700';
+                                                    }
+                                                ?>">
+                                                    <?php echo $status; ?>
                                                 </span>
                                             </td>
                                             <td class="px-6 py-3 text-right space-x-2">

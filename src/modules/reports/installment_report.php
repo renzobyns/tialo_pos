@@ -52,6 +52,7 @@ $overdue_result = $conn->query($overdue_query)->fetch_assoc();
                     <th>Amount Due</th>
                     <th>Balance Remaining</th>
                     <th>Status</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -65,6 +66,14 @@ $overdue_result = $conn->query($overdue_query)->fetch_assoc();
                             <span class="status-badge status-<?php echo strtolower($row['status']); ?>">
                                 <?php echo $row['status']; ?>
                             </span>
+                        </td>
+                        <td>
+                            <?php if ($row['status'] === 'Unpaid'): ?>
+                                <form method="POST" action="src/modules/reports/process_installment_payment.php" onsubmit="return confirm('Mark this installment as Paid?');">
+                                    <input type="hidden" name="installment_id" value="<?php echo $row['installment_id']; ?>">
+                                    <button type="submit" class="btn-mark-paid">Mark as Paid</button>
+                                </form>
+                            <?php endif; ?>
                         </td>
                     </tr>
                 <?php endwhile; ?>

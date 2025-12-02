@@ -231,6 +231,7 @@ include __DIR__ . '/../../includes/page_header.php';
                                     <th class="px-6 py-3 text-left">Amount Due</th>
                                     <th class="px-6 py-3 text-left">Balance Remaining</th>
                                     <th class="px-6 py-3 text-left">Status</th>
+                                    <th class="px-6 py-3 text-left">Actions</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100">
@@ -244,14 +245,29 @@ include __DIR__ . '/../../includes/page_header.php';
                                             <td class="px-6 py-3 text-amber-600 font-semibold"><?php echo peso($row['amount_due']); ?></td>
                                             <td class="px-6 py-3 text-slate-900 font-semibold"><?php echo peso($row['balance_remaining']); ?></td>
                                             <td class="px-6 py-3">
-                                                <span class="px-3 py-1 rounded-full text-xs font-semibold <?php echo $overdue ? 'bg-red-100 text-red-700' : 'bg-slate-100 text-slate-700'; ?>">
-                                                    <?php echo $overdue ? 'Overdue' : 'Upcoming'; ?>
-                                                </span>
+                                                <?php if ($row['status'] === 'Paid'): ?>
+                                                    <span class="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">
+                                                        Paid
+                                                    </span>
+                                                <?php else: ?>
+                                                    <?php $overdue = strtotime($row['due_date']) < time() && $row['status'] === 'Unpaid'; ?>
+                                                    <span class="px-3 py-1 rounded-full text-xs font-semibold <?php echo $overdue ? 'bg-red-100 text-red-700' : 'bg-slate-100 text-slate-700'; ?>">
+                                                        <?php echo $overdue ? 'Overdue' : 'Upcoming'; ?>
+                                                    </span>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td class="px-6 py-3">
+                                                <?php if ($row['status'] === 'Unpaid'): ?>
+                                                <form method="POST" action="?page=reports/process_installment" onsubmit="return confirm('Mark this installment as Paid?');">
+                                                    <input type="hidden" name="installment_id" value="<?php echo $row['installment_id']; ?>">
+                                                    <button type="submit" class="text-sm font-semibold text-red-600 hover:text-red-800">Mark as Paid</button>
+                                                </form>
+                                                <?php endif; ?>
                                             </td>
                                         </tr>
                                     <?php endwhile; ?>
                                 <?php else: ?>
-                                    <tr><td colspan="6" class="px-6 py-6 text-center text-slate-500">No installment schedules pending.</td></tr>
+                                    <tr><td colspan="7" class="px-6 py-6 text-center text-slate-500">No installment schedules pending.</td></tr>
                                 <?php endif; ?>
                             </tbody>
                         </table>
