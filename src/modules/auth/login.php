@@ -209,7 +209,7 @@ include __DIR__ . '/../../includes/page_header.php';
     <div class="login-card">
       <!-- Brand Section -->
       <div class="login-brand">
-        <div class="login-brand-circle">T</div>
+        <img src="assets/img/logo_light.jpg" alt="Tialo POS Logo" class="h-16 mx-auto mb-4">
         <h1>Tialo Japan Surplus</h1>
         <p>POS System</p>
       </div>

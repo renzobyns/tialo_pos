@@ -330,8 +330,8 @@ if ($_SESSION['role'] === 'Admin') {
     </svg>
   </button>
   <!-- Brand -->
-  <div class="sidebar-brand">
-    <div class="sidebar-brand-circle">T</div>
+  <div class="sidebar-brand text-center">
+    <img src="assets/img/logo_light.jpg" alt="Tialo POS Logo" class="h-10 mx-auto mb-2">
     <div class="sidebar-brand-text">
       <h3>Tialo Japan</h3>
       <p>Surplus POS</p>
