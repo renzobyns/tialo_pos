@@ -1,6 +1,6 @@
 <?php
 include __DIR__ . '/../src/includes/db_connect.php';
-
+hatdog
 // Get all products
 $result = $conn->query("SELECT product_id, quantity, status FROM products");
 
