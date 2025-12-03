@@ -119,6 +119,10 @@ $page_styles = <<<EOT
         margin-bottom: 14px;
       }
 
+      .form-group.relative {
+        position: relative;
+      }
+
       .form-group label {
         display: block;
         font-size: 13px;
@@ -137,6 +141,10 @@ $page_styles = <<<EOT
         transition: all 0.2s;
       }
 
+      .form-group input.pr-10 {
+        padding-right: 40px;
+      }
+
       .form-group input:focus {
         outline: none;
         border-color: var(--color-primary);
@@ -145,6 +153,23 @@ $page_styles = <<<EOT
 
       .form-group input::placeholder {
         color: var(--color-text-muted);
+      }
+
+      #togglePassword {
+        position: absolute;
+        right: 12px;
+        top: 32px;
+        cursor: pointer;
+        color: #6B7280;
+        transition: color 0.2s;
+      }
+
+      #togglePassword:hover {
+        color: var(--color-text-strong);
+      }
+
+      #togglePassword i {
+        font-size: 16px;
       }
 
       .login-submit {
@@ -201,6 +226,7 @@ $page_styles = <<<EOT
         font-family: 'Monaco', 'Menlo', monospace;
       }
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 EOT;
 include __DIR__ . '/../../includes/page_header.php';
 ?>
@@ -232,9 +258,12 @@ include __DIR__ . '/../../includes/page_header.php';
             <label for="email">Email Address</label>
             <input type="email" id="email" name="email" placeholder="admin@tialo.com" required autofocus>
           </div>
-          <div class="form-group">
+          <div class="form-group relative">
             <label for="password">Password</label>
-            <input type="password" id="password" name="password" placeholder="••••••••" required>
+            <input type="password" id="password" name="password" placeholder="••••••••" required class="pr-10">
+            <span id="togglePassword">
+                <i class="fas fa-eye"></i>
+            </span>
           </div>
           <button type="submit" class="login-submit">Sign In</button>
         </form>
@@ -250,4 +279,22 @@ include __DIR__ . '/../../includes/page_header.php';
       </div>
     </div>
   </div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const togglePassword = document.getElementById('togglePassword');
+        const password = document.getElementById('password');
+
+        if (togglePassword && password) {
+            togglePassword.addEventListener('click', function (e) {
+                // toggle the type attribute
+                const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+                password.setAttribute('type', type);
+                // toggle the eye / eye-slash icon
+                this.querySelector('i').classList.toggle('fa-eye');
+                this.querySelector('i').classList.toggle('fa-eye-slash');
+            });
+        }
+    });
+</script>
 <?php include __DIR__ . '/../../includes/page_footer.php'; ?>
+</body>
