@@ -1,7 +1,7 @@
 <?php
 $status = $_GET['status'] ?? 'All';
 
-$query = "SELECT i.installment_id, i.due_date, i.amount_due, i.balance_remaining, i.status, 
+$query = "SELECT i.installment_id, i.due_date, i.amount_due, i.balance_remaining, i.status, i.customer_name, i.customer_contact,
                  t.transaction_id, t.total_amount, t.transaction_date
           FROM installments i
           JOIN transactions t ON i.transaction_id = t.transaction_id
@@ -48,6 +48,8 @@ $overdue_result = $conn->query($overdue_query)->fetch_assoc();
             <thead>
                 <tr>
                     <th>Transaction ID</th>
+                    <th>Customer Name</th>
+                    <th>Contact</th>
                     <th>Due Date</th>
                     <th>Amount Due</th>
                     <th>Balance Remaining</th>
@@ -59,6 +61,8 @@ $overdue_result = $conn->query($overdue_query)->fetch_assoc();
                 <?php while ($row = $result->fetch_assoc()): ?>
                     <tr class="<?php echo $row['status'] === 'Unpaid' && strtotime($row['due_date']) < time() ? 'overdue' : ''; ?>">
                         <td>#<?php echo str_pad($row['transaction_id'], 6, '0', STR_PAD_LEFT); ?></td>
+                        <td><?php echo htmlspecialchars($row['customer_name']); ?></td>
+                        <td><?php echo htmlspecialchars($row['customer_contact']); ?></td>
                         <td><?php echo date('M d, Y', strtotime($row['due_date'])); ?></td>
                         <td>₱<?php echo number_format($row['amount_due'], 2); ?></td>
                         <td>₱<?php echo number_format($row['balance_remaining'], 2); ?></td>

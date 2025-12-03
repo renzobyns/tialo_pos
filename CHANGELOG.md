@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Rationale: Add customer name and contact to installments for better tracking
+
+*   **Chosen Approach:** Added `customer_name` and `customer_contact` columns to the `installments` table.
+*   **Reason for Decision:** The business needs to track who made an installment purchase. Storing the customer's name and contact information directly in the `installments` table is the most direct way to associate a buyer with an installment plan.
+
+### Added
+- **Database Schema:** Added `customer_name` (VARCHAR) and `customer_contact` (VARCHAR) columns to the `installments` table in `scripts/tialo_posdb.sql`.
+
+### Changed
+- **Checkout Process:** Modified `src/modules/pos/checkout.php` to include input fields for customer name and contact when the installment payment method is selected.
+- **Checkout Processing:** Updated `src/modules/pos/process_checkout.php` to save the customer's name and contact information to the `installments` table.
+- **Installment Report:** Updated `src/modules/reports/installment_report.php` to display the customer's name and contact information in the report.
+
+
 ### Rationale: Ensure accurate inventory status across the application
 
 *   **Chosen Approach:** Implemented a multi-layered approach to ensure product status is always accurate. First, the backend processing for creating/editing products now automatically sets the status to "Available" or "Out of Stock" based on quantity. Second, the main inventory table now dynamically displays the status, overriding the database value if the quantity is zero.

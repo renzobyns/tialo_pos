@@ -30,6 +30,8 @@ SET time_zone = "+00:00";
 CREATE TABLE `installments` (
   `installment_id` int(11) NOT NULL,
   `transaction_id` int(11) DEFAULT NULL,
+  `customer_name` varchar(255) NOT NULL,
+  `customer_contact` varchar(50) DEFAULT NULL,
   `due_date` date NOT NULL,
   `amount_due` decimal(10,2) NOT NULL,
   `balance_remaining` decimal(10,2) NOT NULL,

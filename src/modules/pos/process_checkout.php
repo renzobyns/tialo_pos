@@ -44,6 +44,8 @@ try {
     // Handle installment if applicable
     if ($payment_type === 'Installment') {
         $installment_months = (int)$_POST['installment_months'];
+        $customer_name = sanitize($_POST['customer_name']);
+        $customer_contact = sanitize($_POST['customer_contact']);
         $monthly_amount = $total_amount / $installment_months;
         
         for ($i = 1; $i <= $installment_months; $i++) {
@@ -51,9 +53,9 @@ try {
             $amount_due = $monthly_amount;
             $balance_remaining = $total_amount - ($monthly_amount * ($i - 1));
             
-            $install_query = "INSERT INTO installments (transaction_id, due_date, amount_due, balance_remaining) VALUES (?, ?, ?, ?)";
+            $install_query = "INSERT INTO installments (transaction_id, customer_name, customer_contact, due_date, amount_due, balance_remaining) VALUES (?, ?, ?, ?, ?, ?)";
             $install_stmt = $conn->prepare($install_query);
-            $install_stmt->bind_param("isdd", $transaction_id, $due_date, $amount_due, $balance_remaining);
+            $install_stmt->bind_param("isssdd", $transaction_id, $customer_name, $customer_contact, $due_date, $amount_due, $balance_remaining);
             $install_stmt->execute();
         }
     }
