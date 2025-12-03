@@ -1,8 +1,8 @@
 <?php
 $status = $_GET['status'] ?? 'All';
 
-$query = "SELECT i.installment_id, i.due_date, i.amount_due, i.balance_remaining, i.status, i.customer_name, i.customer_contact,
-                 t.transaction_id, t.total_amount, t.transaction_date
+$query = "SELECT i.installment_id, i.due_date, i.amount_due, i.balance_remaining, i.status, 
+                 t.transaction_id, t.total_amount, t.transaction_date, t.customer_name, t.customer_contact
           FROM installments i
           JOIN transactions t ON i.transaction_id = t.transaction_id
           WHERE 1=1";

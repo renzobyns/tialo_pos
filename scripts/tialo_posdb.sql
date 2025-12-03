@@ -30,8 +30,6 @@ SET time_zone = "+00:00";
 CREATE TABLE `installments` (
   `installment_id` int(11) NOT NULL,
   `transaction_id` int(11) DEFAULT NULL,
-  `customer_name` varchar(255) NOT NULL,
-  `customer_contact` varchar(50) DEFAULT NULL,
   `due_date` date NOT NULL,
   `amount_due` decimal(10,2) NOT NULL,
   `balance_remaining` decimal(10,2) NOT NULL,
@@ -118,6 +116,8 @@ INSERT INTO `shipments` (`shipment_id`, `date_received`, `time_received`, `suppl
 CREATE TABLE `transactions` (
   `transaction_id` int(11) NOT NULL,
   `user_id` int(11) DEFAULT NULL,
+  `customer_name` varchar(255) DEFAULT NULL,
+  `customer_contact` varchar(50) DEFAULT NULL,
   `transaction_date` datetime DEFAULT current_timestamp(),
   `payment_type` enum('Cash','GCash','Installment') NOT NULL,
   `total_amount` decimal(10,2) NOT NULL

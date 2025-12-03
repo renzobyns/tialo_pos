@@ -14,15 +14,17 @@ if (empty($cart)) {
 $payment_type = sanitize($_POST['payment_type']);
 $total_amount = (float)$_POST['total_amount'];
 $user_id = $_SESSION['user_id'];
+$customer_name = sanitize($_POST['customer_name']);
+$customer_contact = sanitize($_POST['customer_contact']);
 
 // Start transaction
 $conn->begin_transaction();
 
 try {
     // Insert transaction
-    $query = "INSERT INTO transactions (user_id, payment_type, total_amount) VALUES (?, ?, ?)";
+    $query = "INSERT INTO transactions (user_id, customer_name, customer_contact, payment_type, total_amount) VALUES (?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($query);
-    $stmt->bind_param("isd", $user_id, $payment_type, $total_amount);
+    $stmt->bind_param("isssd", $user_id, $customer_name, $customer_contact, $payment_type, $total_amount);
     $stmt->execute();
     $transaction_id = $conn->insert_id;
     
@@ -41,11 +43,9 @@ try {
         $update_stmt->execute();
     }
     
-    // Handle installment if applicable
+// Handle installment if applicable
     if ($payment_type === 'Installment') {
         $installment_months = (int)$_POST['installment_months'];
-        $customer_name = sanitize($_POST['customer_name']);
-        $customer_contact = sanitize($_POST['customer_contact']);
         $monthly_amount = $total_amount / $installment_months;
         
         for ($i = 1; $i <= $installment_months; $i++) {
@@ -53,9 +53,9 @@ try {
             $amount_due = $monthly_amount;
             $balance_remaining = $total_amount - ($monthly_amount * ($i - 1));
             
-            $install_query = "INSERT INTO installments (transaction_id, customer_name, customer_contact, due_date, amount_due, balance_remaining) VALUES (?, ?, ?, ?, ?, ?)";
+            $install_query = "INSERT INTO installments (transaction_id, due_date, amount_due, balance_remaining) VALUES (?, ?, ?, ?)";
             $install_stmt = $conn->prepare($install_query);
-            $install_stmt->bind_param("isssdd", $transaction_id, $customer_name, $customer_contact, $due_date, $amount_due, $balance_remaining);
+            $install_stmt->bind_param("isdd", $transaction_id, $due_date, $amount_due, $balance_remaining);
             $install_stmt->execute();
         }
     }

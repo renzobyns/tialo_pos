@@ -7,18 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Rationale: Add customer name and contact to installments for better tracking
+### Rationale: Add customer details to all transactions
 
-*   **Chosen Approach:** Added `customer_name` and `customer_contact` columns to the `installments` table.
-*   **Reason for Decision:** The business needs to track who made an installment purchase. Storing the customer's name and contact information directly in the `installments` table is the most direct way to associate a buyer with an installment plan.
+*   **Chosen Approach:** Added `customer_name` and `customer_contact` columns to the `transactions` table.
+*   **Reason for Decision:** The business needs to track the buyer for every sale, not just installments. Storing customer information directly in the `transactions` table is the most direct way to associate a buyer with any given purchase.
 
 ### Added
-- **Database Schema:** Added `customer_name` (VARCHAR) and `customer_contact` (VARCHAR) columns to the `installments` table in `scripts/tialo_posdb.sql`.
+- **Database Schema:** Added `customer_name` (VARCHAR) and `customer_contact` (VARCHAR) columns to the `transactions` table in `scripts/tialo_posdb.sql`.
 
 ### Changed
-- **Checkout Process:** Modified `src/modules/pos/checkout.php` to include input fields for customer name and contact when the installment payment method is selected.
-- **Checkout Processing:** Updated `src/modules/pos/process_checkout.php` to save the customer's name and contact information to the `installments` table.
-- **Installment Report:** Updated `src/modules/reports/installment_report.php` to display the customer's name and contact information in the report.
+- **Checkout Form:** Added a "Customer Details" section to `src/modules/pos/checkout.php` to collect customer information for all sales.
+- **Checkout Processing:** Updated `src/modules/pos/process_checkout.php` to save customer details to the `transactions` table.
+- **Installment Report:** Modified `src/modules/reports/installment_report.php` to retrieve customer details from the `transactions` table.
+
+### Removed
+- **Database Schema:** Removed the redundant `customer_name` and `customer_contact` columns from the `installments` table.
 
 
 ### Rationale: Ensure accurate inventory status across the application
