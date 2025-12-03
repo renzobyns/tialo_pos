@@ -1,7 +1,7 @@
 <?php
-include '../../includes/auth_check.php';
+include __DIR__ . '/../../includes/auth_check.php';
 checkRole('Admin');
-include '../../includes/db_connect.php';
+include __DIR__ . '/../../includes/db_connect.php';
 
 $action = $_POST['action'] ?? $_GET['action'] ?? '';
 

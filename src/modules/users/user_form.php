@@ -57,7 +57,7 @@ include __DIR__ . '/../../includes/page_header.php';
                     <h2 class="text-xl font-semibold text-slate-900"><?php echo $is_edit ? 'Profile Details' : 'New Account Details'; ?></h2>
                     <p class="text-sm text-slate-500 mt-1">All required fields are marked with an asterisk.</p>
                 </div>
-                <form method="POST" action="/index.php?page=users/process_user" class="px-8 py-6 space-y-6">
+                <form method="POST" action="<?php echo APP_URL; ?>/public/index.php?page=users/process_user" class="px-8 py-6 space-y-6">
                     <?php if ($is_edit): ?>
                         <input type="hidden" name="action" value="update">
                         <input type="hidden" name="user_id" value="<?php echo $user['user_id']; ?>">

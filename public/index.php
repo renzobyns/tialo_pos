@@ -1,6 +1,9 @@
 <?php
 session_start();
 
+// Include the configuration file
+require_once __DIR__ . '/../config.php';
+
 // Simple router based on a 'page' query parameter
 $page = $_GET['page'] ?? 'home';
 

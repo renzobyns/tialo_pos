@@ -125,7 +125,7 @@ include __DIR__ . '/../../includes/page_header.php';
                                     </td>
                                     <td class="px-6 py-4 text-sm space-x-3">
                                         <a href="?page=users/user_form&id=<?php echo $user['user_id']; ?>" class="text-blue-600 hover:text-blue-800 font-semibold">Edit</a>
-                                        <form method="POST" action="/index.php?page=users/process_user" class="inline" onsubmit="return confirm('Delete this user?');">
+                                        <form method="POST" action="<?php echo APP_URL; ?>/public/index.php?page=users/process_user" class="inline" onsubmit="return confirm('Delete this user?');">
                                             <input type="hidden" name="action" value="delete">
                                             <input type="hidden" name="user_id" value="<?php echo $user['user_id']; ?>">
                                             <button type="submit" class="text-red-600 hover:text-red-800 font-semibold">Delete</button>
