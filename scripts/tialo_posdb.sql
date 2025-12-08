@@ -95,6 +95,7 @@ CREATE TABLE `shipments` (
   `supplier` varchar(100) NOT NULL,
   `driver_name` varchar(100) DEFAULT NULL,
   `total_boxes` int(11) DEFAULT 0,
+  `cost` decimal(10,2) NOT NULL DEFAULT 0.00,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 

@@ -104,6 +104,7 @@ include __DIR__ . '/../../includes/page_header.php';
                         <a href="?page=reports&tab=sales&period=<?php echo urlencode($period); ?>&payment=<?php echo urlencode($payment_type); ?>&staff=<?php echo (int)$staff_id; ?>" class="inline-flex items-center px-4 py-2 text-sm font-semibold rounded-full transition whitespace-nowrap <?php echo $tab === 'sales' ? 'bg-red-600 text-white shadow border border-red-600' : 'bg-white text-slate-600 border border-transparent hover:border-slate-200 hover:text-slate-900'; ?>">Sales Reports</a>
                         <a href="?page=reports&tab=installments" class="inline-flex items-center px-4 py-2 text-sm font-semibold rounded-full transition whitespace-nowrap <?php echo $tab === 'installments' ? 'bg-red-600 text-white shadow border border-red-600' : 'bg-white text-slate-600 border border-transparent hover:border-slate-200 hover:text-slate-900'; ?>">Installment Reports</a>
                         <a href="?page=reports&tab=inventory" class="inline-flex items-center px-4 py-2 text-sm font-semibold rounded-full transition whitespace-nowrap <?php echo $tab === 'inventory' ? 'bg-red-600 text-white shadow border border-red-600' : 'bg-white text-slate-600 border border-transparent hover:border-slate-200 hover:text-slate-900'; ?>">Inventory Reports</a>
+                        <a href="?page=reports&tab=shipments" class="inline-flex items-center px-4 py-2 text-sm font-semibold rounded-full transition whitespace-nowrap <?php echo $tab === 'shipments' ? 'bg-red-600 text-white shadow border border-red-600' : 'bg-white text-slate-600 border border-transparent hover:border-slate-200 hover:text-slate-900'; ?>">Shipment Reports</a>
                     </div>
                 </div>
             </div>
@@ -347,6 +348,8 @@ include __DIR__ . '/../../includes/page_header.php';
                         </div>
                     </div>
                 </div>
+            <?php elseif ($tab === 'shipments'): ?>
+                <?php include __DIR__ . '/shipment_report.php'; ?>
             <?php endif; ?>
         </main>
     </div>

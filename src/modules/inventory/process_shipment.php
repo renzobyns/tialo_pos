@@ -11,11 +11,12 @@ if ($action === 'create') {
     $supplier = sanitize($_POST['supplier']);
     $driver_name = sanitize($_POST['driver_name']);
     $total_boxes = (int)$_POST['total_boxes'];
+    $cost = (float)$_POST['cost'];
     
-    $query = "INSERT INTO shipments (date_received, time_received, supplier, driver_name, total_boxes) 
-              VALUES (?, ?, ?, ?, ?)";
+    $query = "INSERT INTO shipments (date_received, time_received, supplier, driver_name, total_boxes, cost) 
+              VALUES (?, ?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($query);
-    $stmt->bind_param("ssssi", $date_received, $time_received, $supplier, $driver_name, $total_boxes);
+    $stmt->bind_param("ssssid", $date_received, $time_received, $supplier, $driver_name, $total_boxes, $cost);
     
     if ($stmt->execute()) {
         header("Location: index.php?tab=shipments&success=Shipment created successfully");
@@ -32,11 +33,12 @@ elseif ($action === 'update') {
     $supplier = sanitize($_POST['supplier']);
     $driver_name = sanitize($_POST['driver_name']);
     $total_boxes = (int)$_POST['total_boxes'];
+    $cost = (float)$_POST['cost'];
     
-    $query = "UPDATE shipments SET date_received = ?, time_received = ?, supplier = ?, driver_name = ?, total_boxes = ? 
+    $query = "UPDATE shipments SET date_received = ?, time_received = ?, supplier = ?, driver_name = ?, total_boxes = ?, cost = ? 
               WHERE shipment_id = ?";
     $stmt = $conn->prepare($query);
-    $stmt->bind_param("ssssii", $date_received, $time_received, $supplier, $driver_name, $total_boxes, $shipment_id);
+    $stmt->bind_param("ssssidi", $date_received, $time_received, $supplier, $driver_name, $total_boxes, $cost, $shipment_id);
     
     if ($stmt->execute()) {
         header("Location: index.php?tab=shipments&success=Shipment updated successfully");
