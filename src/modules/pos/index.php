@@ -410,7 +410,7 @@ include __DIR__ . '/../../includes/page_header.php';
                                             </td>
                                             <td class="py-4 text-right font-semibold text-slate-900">₱<?php echo number_format($history['total_amount'], 2); ?></td>
                                             <td class="py-4 text-right">
-                                                <a href="receipt.php?transaction_id=<?php echo (int) $history['transaction_id']; ?>"
+                                                <a href="/index.php?page=pos_receipt&transaction_id=<?php echo (int) $history['transaction_id']; ?>"
                                                    class="inline-flex items-center gap-1 px-3 py-2 text-xs font-semibold rounded-full border border-slate-200 text-slate-700 hover:text-red-600 hover:border-red-200 transition">
                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12H9m12 0A9 9 0 11.999 12a9 9 0 0120.001 0z" />
