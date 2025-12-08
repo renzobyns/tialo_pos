@@ -16,6 +16,9 @@ $cart = $input['cart'] ?? [];
 $discount = isset($input['discount']) ? (float)$input['discount'] : 0;
 $payment_type = isset($input['payment_type']) ? sanitize($input['payment_type']) : '';
 $installment_months = isset($input['installment_months']) ? (int)$input['installment_months'] : 6;
+$down_payment = isset($input['down_payment']) ? (float)$input['down_payment'] : 0;
+$customer_name = isset($input['customer_name']) ? sanitize($input['customer_name']) : '';
+$customer_contact = isset($input['customer_contact']) ? sanitize($input['customer_contact']) : '';
 
 if (empty($cart)) {
     http_response_code(422);
@@ -28,6 +31,20 @@ if (!in_array($payment_type, $allowed_methods, true)) {
     http_response_code(422);
     echo json_encode(['success' => false, 'message' => 'Invalid payment method.']);
     exit();
+}
+
+// Validation for Installment
+if ($payment_type === 'Installment') {
+    if (empty($customer_name) || empty($customer_contact)) {
+        http_response_code(422);
+        echo json_encode(['success' => false, 'message' => 'Customer name and contact are required for installments.']);
+        exit();
+    }
+    if ($down_payment < 0) {
+        http_response_code(422);
+        echo json_encode(['success' => false, 'message' => 'Invalid down payment amount.']);
+        exit();
+    }
 }
 
 $product_stmt = $conn->prepare("SELECT name, price, quantity FROM products WHERE product_id = ? AND status = 'Available'");
@@ -89,8 +106,8 @@ $user_id = $_SESSION['user_id'];
 $conn->begin_transaction();
 
 try {
-    $txn_stmt = $conn->prepare("INSERT INTO transactions (user_id, payment_type, total_amount, discount_amount) VALUES (?, ?, ?, ?)");
-    $txn_stmt->bind_param("isdd", $user_id, $payment_type, $total_amount, $discount);
+    $txn_stmt = $conn->prepare("INSERT INTO transactions (user_id, payment_type, total_amount, discount_amount, down_payment, customer_name, customer_contact) VALUES (?, ?, ?, ?, ?, ?, ?)");
+    $txn_stmt->bind_param("isdddss", $user_id, $payment_type, $total_amount, $discount, $down_payment, $customer_name, $customer_contact);
     $txn_stmt->execute();
     $transaction_id = $conn->insert_id;
 
@@ -109,13 +126,26 @@ try {
         if ($installment_months <= 0) {
             $installment_months = 6;
         }
-        $monthly_amount = $total_amount / $installment_months;
+        
+        $balance_for_installment = $total_amount - $down_payment;
+        $monthly_amount = $balance_for_installment / $installment_months;
 
         $install_stmt = $conn->prepare("INSERT INTO installments (transaction_id, due_date, amount_due, balance_remaining) VALUES (?, ?, ?, ?)");
         for ($i = 1; $i <= $installment_months; $i++) {
             $due_date = date('Y-m-d', strtotime("+$i months"));
             $amount_due = $monthly_amount;
-            $balance_remaining = $total_amount - ($monthly_amount * ($i - 1));
+            // Balance remaining logic: starts at full installment balance, reduces by monthly amount paid (simulated here)
+            // But usually balance remaining is what is left AFTER this payment.
+            // Let's stick to the previous logic but use the new base.
+            // Actually, balance_remaining usually means "How much is left to pay *before* this installment is paid" or *after*?
+            // The previous code was: $total_amount - ($monthly_amount * ($i - 1));
+            // This implies balance at the *start* of the period. 
+            // Let's adjust: Balance remaining initially is $balance_for_installment.
+            // For record 1: Balance is $balance_for_installment.
+            // For record 2: Balance is $balance_for_installment - $monthly_amount.
+            
+            $balance_remaining = $balance_for_installment - ($monthly_amount * ($i - 1));
+            
             $install_stmt->bind_param("isdd", $transaction_id, $due_date, $amount_due, $balance_remaining);
             $install_stmt->execute();
         }

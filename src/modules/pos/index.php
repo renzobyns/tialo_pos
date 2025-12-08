@@ -308,6 +308,12 @@ include __DIR__ . '/../../includes/page_header.php';
                                 </div>
                             </div>
 
+                            <div class="space-y-3 pb-4 border-b border-slate-100">
+                                <p class="text-xs uppercase font-semibold text-slate-500">Customer Details <span id="customerRequired" class="hidden text-red-500">*</span></p>
+                                <input type="text" id="customerName" class="w-full h-10 px-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#D00000] text-sm" placeholder="Customer Name">
+                                <input type="text" id="customerContact" class="w-full h-10 px-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#D00000] text-sm" placeholder="Contact Number">
+                            </div>
+
                             <div class="space-y-3">
                                 <p class="text-xs uppercase font-semibold text-slate-500">Payment Method</p>
                                 <div class="flex flex-wrap gap-2" id="paymentButtons">
@@ -324,14 +330,37 @@ include __DIR__ . '/../../includes/page_header.php';
                                         <p class="text-xs text-slate-500">Auto-schedule dues</p>
                                     </button>
                                 </div>
-                                <div id="installmentConfig" class="hidden border border-dashed border-slate-200 rounded-2xl p-3 bg-slate-50">
-                                    <label for="installmentMonths" class="block text-xs font-semibold text-slate-500 mb-2">Installment term</label>
-                                    <select id="installmentMonths" class="w-full h-10 px-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-900 text-sm">
-                                        <option value="3">3 months</option>
-                                        <option value="6" selected>6 months</option>
-                                        <option value="12">12 months</option>
-                                    </select>
-                                    <p class="text-xs text-slate-500 mt-2">Monthly dues are computed automatically after completion.</p>
+                                <div id="installmentConfig" class="hidden border border-dashed border-slate-200 rounded-2xl p-3 bg-slate-50 space-y-3">
+                                    <div>
+                                        <label for="installmentMonths" class="block text-xs font-semibold text-slate-500 mb-1">Installment term</label>
+                                        <select id="installmentMonths" class="w-full h-10 px-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-900 text-sm">
+                                            <option value="3">3 months</option>
+                                            <option value="6" selected>6 months</option>
+                                            <option value="12">12 months</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label for="downPayment" class="block text-xs font-semibold text-slate-500 mb-1">Down Payment</label>
+                                        <input type="number" id="downPayment" min="0" step="0.01" class="w-full h-10 px-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-900 text-sm" placeholder="0.00">
+                                    </div>
+                                    <div class="bg-white rounded-xl border border-slate-200 p-3 space-y-2 text-sm">
+                                        <div class="flex justify-between text-slate-500">
+                                            <span>Total Amount:</span>
+                                            <span id="breakdownTotal">₱0.00</span>
+                                        </div>
+                                        <div class="flex justify-between text-slate-500">
+                                            <span>Less Down Payment:</span>
+                                            <span id="breakdownDownPayment" class="text-red-600">-₱0.00</span>
+                                        </div>
+                                        <div class="flex justify-between font-medium text-slate-700 pt-2 border-t border-slate-100">
+                                            <span>Installment Balance:</span>
+                                            <span id="breakdownBalance">₱0.00</span>
+                                        </div>
+                                        <div class="flex justify-between font-bold text-slate-900">
+                                            <span>Monthly Amortization:</span>
+                                            <span id="breakdownMonthly">₱0.00</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -471,6 +500,34 @@ include __DIR__ . '/../../includes/page_header.php';
                         <kbd class="kbd">F9</kbd>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- Admin Authorization Modal -->
+        <div id="adminAuthModal" class="hidden fixed inset-0 bg-slate-900 bg-opacity-50 z-[100] flex items-center justify-center p-4" aria-modal="true" role="dialog">
+            <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 relative">
+                <h3 class="text-xl font-bold text-slate-900 mb-2">Admin Authorization</h3>
+                <p class="text-sm text-slate-500 mb-4">An admin password is required to approve this installment plan.</p>
+                
+                <form id="adminAuthForm" onsubmit="verifyAdmin(event)">
+                    <div class="space-y-3">
+                        <div>
+                            <label for="adminEmail" class="block text-xs font-semibold text-slate-500 mb-1">Admin Email</label>
+                            <input type="email" id="adminEmail" required class="w-full h-10 px-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#D00000] text-sm" placeholder="admin@example.com">
+                        </div>
+                        <div>
+                            <label for="adminPassword" class="block text-xs font-semibold text-slate-500 mb-1">Password</label>
+                            <input type="password" id="adminPassword" required class="w-full h-10 px-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#D00000] text-sm" placeholder="••••••••">
+                        </div>
+                    </div>
+                    
+                    <div id="adminAuthError" class="hidden mt-3 p-2 bg-red-50 text-red-600 text-xs rounded-lg"></div>
+
+                    <div class="flex gap-3 mt-6">
+                        <button type="button" onclick="closeAdminAuthModal()" class="flex-1 h-10 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition">Cancel</button>
+                        <button type="submit" class="flex-1 h-10 rounded-xl bg-[#D00000] text-white font-semibold hover:bg-red-700 transition">Approve</button>
+                    </div>
+                </form>
             </div>
         </div>
 

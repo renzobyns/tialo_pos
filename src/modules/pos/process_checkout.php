@@ -13,6 +13,7 @@ if (empty($cart)) {
 
 $payment_type = sanitize($_POST['payment_type']);
 $total_amount = (float)$_POST['total_amount'];
+$down_payment = isset($_POST['down_payment']) ? (float)$_POST['down_payment'] : 0.00;
 $user_id = $_SESSION['user_id'];
 $customer_name = sanitize($_POST['customer_name']);
 $customer_contact = sanitize($_POST['customer_contact']);
@@ -22,9 +23,9 @@ $conn->begin_transaction();
 
 try {
     // Insert transaction
-    $query = "INSERT INTO transactions (user_id, customer_name, customer_contact, payment_type, total_amount) VALUES (?, ?, ?, ?, ?)";
+    $query = "INSERT INTO transactions (user_id, customer_name, customer_contact, payment_type, total_amount, down_payment) VALUES (?, ?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($query);
-    $stmt->bind_param("isssd", $user_id, $customer_name, $customer_contact, $payment_type, $total_amount);
+    $stmt->bind_param("isssdd", $user_id, $customer_name, $customer_contact, $payment_type, $total_amount, $down_payment);
     $stmt->execute();
     $transaction_id = $conn->insert_id;
     
@@ -46,12 +47,13 @@ try {
 // Handle installment if applicable
     if ($payment_type === 'Installment') {
         $installment_months = (int)$_POST['installment_months'];
-        $monthly_amount = $total_amount / $installment_months;
+        $balance_for_installment = $total_amount - $down_payment;
+        $monthly_amount = $balance_for_installment / $installment_months;
         
         for ($i = 1; $i <= $installment_months; $i++) {
             $due_date = date('Y-m-d', strtotime("+$i months"));
             $amount_due = $monthly_amount;
-            $balance_remaining = $total_amount - ($monthly_amount * ($i - 1));
+            $balance_remaining = $balance_for_installment - ($monthly_amount * ($i - 1));
             
             $install_query = "INSERT INTO installments (transaction_id, due_date, amount_due, balance_remaining) VALUES (?, ?, ?, ?)";
             $install_stmt = $conn->prepare($install_query);

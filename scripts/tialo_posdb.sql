@@ -121,10 +121,10 @@ CREATE TABLE `transactions` (
   `customer_contact` varchar(50) DEFAULT NULL,
   `transaction_date` datetime DEFAULT current_timestamp(),
   `payment_type` enum('Cash','GCash','Installment') NOT NULL,
-  `total_amount` decimal(10,2) NOT NULL
+  `total_amount` decimal(10,2) NOT NULL,
+  `discount_amount` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `down_payment` decimal(10,2) NOT NULL DEFAULT 0.00
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
-ALTER TABLE `transactions` ADD `discount_amount` DECIMAL(10, 2) NOT NULL DEFAULT 0.00 AFTER `total_amount`;
 
 --
 -- Dumping data for table `transactions`

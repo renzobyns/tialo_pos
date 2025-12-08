@@ -19,6 +19,7 @@ $allowed_pages = [
     'auth/login' => '../src/modules/auth/login.php',
     'auth/login_process' => '../src/modules/auth/login_process.php',
     'auth/logout' => '../src/modules/auth/logout.php',
+    'auth/verify_admin_password' => '../src/modules/auth/verify_admin_password.php',
     
     // POS
     'pos' => '../src/modules/pos/index.php',

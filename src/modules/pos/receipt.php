@@ -41,6 +41,19 @@ while ($row = $items_result->fetch_assoc()) {
     $items[] = $row;
 }
 $total_line_items = count($items);
+
+// Get installments if applicable
+$installments = [];
+if ($transaction['payment_type'] === 'Installment') {
+    $inst_query = "SELECT * FROM installments WHERE transaction_id = ? ORDER BY due_date ASC";
+    $inst_stmt = $conn->prepare($inst_query);
+    $inst_stmt->bind_param("i", $transaction_id);
+    $inst_stmt->execute();
+    $inst_result = $inst_stmt->get_result();
+    while ($row = $inst_result->fetch_assoc()) {
+        $installments[] = $row;
+    }
+}
 ?>
 <?php
 $page_title = 'Receipt - Tialo Japan Surplus';
@@ -213,12 +226,60 @@ $discount = $transaction['discount_amount'] ?? 0;
                             <span class="font-semibold text-red-600">- ₱<?php echo number_format($discount, 2); ?></span>
                         </div>
                         <?php endif; ?>
+                        
                         <div class="flex justify-between font-bold text-lg border-t border-dashed border-slate-300 pt-3 text-slate-900">
                             <span>Total Amount</span>
                             <span>₱<?php echo number_format($transaction['total_amount'], 2); ?></span>
                         </div>
+
+                        <?php if ($transaction['payment_type'] === 'Installment'): ?>
+                            <?php 
+                            $down_payment = $transaction['down_payment'] ?? 0;
+                            $balance = max($transaction['total_amount'] - $down_payment, 0);
+                            ?>
+                            <div class="flex justify-between text-slate-600 border-t border-slate-200 pt-2 mt-2">
+                                <span>Down Payment <span class="text-xs text-emerald-600 font-semibold">(Paid)</span></span>
+                                <span class="font-semibold">- ₱<?php echo number_format($down_payment, 2); ?></span>
+                            </div>
+                            <div class="flex justify-between text-slate-900 font-bold pt-1">
+                                <span>Balance Due</span>
+                                <span>₱<?php echo number_format($balance, 2); ?></span>
+                            </div>
+                        <?php endif; ?>
                     </div>
                 </div>
+
+                <?php if (!empty($installments)): ?>
+                <div class="border border-slate-200 rounded-2xl overflow-hidden mt-6">
+                    <div class="bg-slate-50 px-6 py-3 border-b border-slate-200">
+                        <p class="text-xs font-bold uppercase tracking-wide text-slate-500">Installment Schedule</p>
+                    </div>
+                    <table class="receipt-table min-w-full divide-y divide-slate-200 text-sm">
+                        <thead class="bg-white">
+                            <tr class="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                                <th class="px-6 py-3">Due Date</th>
+                                <th class="px-6 py-3">Status</th>
+                                <th class="px-6 py-3 text-right">Amount Due</th>
+                                <th class="px-6 py-3 text-right">Balance After Payment</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            <?php foreach ($installments as $inst): ?>
+                                <tr>
+                                    <td class="px-6 py-4 font-medium text-slate-900"><?php echo date('M d, Y', strtotime($inst['due_date'])); ?></td>
+                                    <td class="px-6 py-4">
+                                        <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-semibold <?php echo $inst['status'] === 'Paid' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'; ?>">
+                                            <?php echo htmlspecialchars($inst['status']); ?>
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 text-right font-semibold text-slate-900">₱<?php echo number_format($inst['amount_due'], 2); ?></td>
+                                    <td class="px-6 py-4 text-right text-slate-500">₱<?php echo number_format($inst['balance_remaining'], 2); ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+                <?php endif; ?>
             </div>
         </section>
 

@@ -191,6 +191,36 @@ function showDiscountError(message) {
   }
 }
 
+function updateBreakdown() {
+  if (paymentType !== "Installment") return;
+
+  const subtotal = calculateSubtotal()
+  const discountInput = document.getElementById("discountAmount")
+  const discount = Number.parseFloat(discountInput?.value) || 0
+  const total = Math.max(subtotal - discount, 0)
+  
+  const downPaymentInput = document.getElementById("downPayment")
+  let downPayment = Number.parseFloat(downPaymentInput?.value) || 0
+  
+  // Cap downpayment at total (visual only, real validation in proceedToCheckout)
+  if (downPayment > total) {
+      // downPayment = total; // Optional: auto-cap
+  }
+
+  const balance = Math.max(total - downPayment, 0);
+  const monthly = balance / installmentMonths;
+
+  const totalEl = document.getElementById("breakdownTotal");
+  const dpEl = document.getElementById("breakdownDownPayment");
+  const balEl = document.getElementById("breakdownBalance");
+  const monthlyEl = document.getElementById("breakdownMonthly");
+
+  if (totalEl) totalEl.textContent = formatPeso(total);
+  if (dpEl) dpEl.textContent = "-" + formatPeso(downPayment);
+  if (balEl) balEl.textContent = formatPeso(balance);
+  if (monthlyEl) monthlyEl.textContent = formatPeso(monthly);
+}
+
 function updateTotal() {
   const subtotal = calculateSubtotal()
   const discountInput = document.getElementById("discountAmount")
@@ -209,6 +239,8 @@ function updateTotal() {
       badgeEl.classList.add("hidden")
     }
   }
+  
+  updateBreakdown();
 }
 
 function selectPayment(method) {
@@ -225,6 +257,18 @@ function selectPayment(method) {
   if (installmentBlock) {
     installmentBlock.classList.toggle("hidden", method !== "Installment")
   }
+  
+  // Toggle Customer Required Asterisk
+  const reqStar = document.getElementById("customerRequired");
+  if (reqStar) {
+      if (method === "Installment") {
+          reqStar.classList.remove("hidden");
+      } else {
+          reqStar.classList.add("hidden");
+      }
+  }
+
+  updateBreakdown();
   saveCartToSession()
 }
 
@@ -323,11 +367,95 @@ async function proceedToCheckout(button) {
   }
   showDiscountError("")
 
+  // New Validation Logic
+  if (paymentType === "Installment") {
+      const custName = document.getElementById('customerName')?.value.trim();
+      const custContact = document.getElementById('customerContact')?.value.trim();
+      const downPayment = parseFloat(document.getElementById('downPayment')?.value) || 0;
+      
+      if (!custName || !custContact) {
+          showToast("Customer Name and Contact are required for Installment.", "error");
+          document.getElementById('customerName')?.focus();
+          return;
+      }
+      
+      // Calculate max allowed downpayment
+      const total = Math.max(subtotal - discount, 0);
+      if (downPayment >= total) {
+          showToast("Down payment cannot equal or exceed the total amount.", "error");
+          return;
+      }
+
+      // Trigger Admin Auth
+      const modal = document.getElementById('adminAuthModal');
+      if (modal) {
+          modal.classList.remove('hidden');
+          document.getElementById('adminEmail')?.focus();
+      }
+      return; // Stop here, wait for admin auth
+  }
+
+  // If not installment, proceed directly
+  executeSale(checkoutUrl);
+}
+
+async function verifyAdmin(event) {
+    event.preventDefault();
+    const email = document.getElementById('adminEmail').value;
+    const password = document.getElementById('adminPassword').value;
+    const errorDiv = document.getElementById('adminAuthError');
+    const submitBtn = document.getElementById('completeSaleBtn');
+    
+    errorDiv.classList.add('hidden');
+    errorDiv.textContent = '';
+
+    try {
+        const response = await fetch('/index.php?page=auth/verify_admin_password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+            closeAdminAuthModal();
+            const checkoutUrl = submitBtn.dataset.checkoutUrl;
+            executeSale(checkoutUrl);
+        } else {
+            errorDiv.textContent = data.message || 'Verification failed';
+            errorDiv.classList.remove('hidden');
+        }
+    } catch (e) {
+        errorDiv.textContent = 'Server error during verification';
+        errorDiv.classList.remove('hidden');
+    }
+}
+
+function closeAdminAuthModal() {
+    const modal = document.getElementById('adminAuthModal');
+    if (modal) {
+        modal.classList.add('hidden');
+        document.getElementById('adminAuthForm').reset();
+        document.getElementById('adminAuthError').classList.add('hidden');
+    }
+}
+
+async function executeSale(checkoutUrl) {
+  const discountInput = document.getElementById("discountAmount")
+  const discount = Number.parseFloat(discountInput?.value) || 0
+  
+  const custName = document.getElementById('customerName')?.value.trim();
+  const custContact = document.getElementById('customerContact')?.value.trim();
+  const downPayment = parseFloat(document.getElementById('downPayment')?.value) || 0;
+
   const payload = {
     cart,
     discount,
     payment_type: paymentType,
     installment_months: paymentType === "Installment" ? installmentMonths : null,
+    customer_name: custName,
+    customer_contact: custContact,
+    down_payment: paymentType === "Installment" ? downPayment : 0
   }
 
   const submitBtn = document.getElementById("completeSaleBtn")
@@ -349,6 +477,11 @@ async function proceedToCheckout(button) {
     }
     cart = []
     updateCart()
+    // Clear inputs
+    document.getElementById('customerName').value = '';
+    document.getElementById('customerContact').value = '';
+    document.getElementById('downPayment').value = '';
+    
     saveCartToSession()
     showToast("Sale completed successfully!", "success")
     setTimeout(() => {
@@ -376,8 +509,16 @@ function setupPaymentSelection() {
     installmentMonths = Number.parseInt(installmentSelect.value, 10) || 6
     installmentSelect.addEventListener("change", (event) => {
       installmentMonths = Number.parseInt(event.target.value, 10) || 6
+      updateBreakdown();
       saveCartToSession()
     })
+  }
+
+  const downPaymentInput = document.getElementById("downPayment");
+  if (downPaymentInput) {
+      downPaymentInput.addEventListener("input", () => {
+          updateBreakdown();
+      });
   }
 }
 
