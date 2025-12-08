@@ -118,8 +118,12 @@ By setting the document root correctly, you ensure your `src` directory remains 
 ## Modules
 - **Authentication & Sessions**: `src/modules/auth/*`
 - **Point of Sale**: `src/modules/pos/*`
+  - Supports Cash, GCash, and **Installment** payments.
+  - Installment workflow includes **Down Payment** handling and **Admin Authorization** (requires an admin password to approve credit).
 - **Inventory Management**: `src/modules/inventory/*`
 - **Reports**: `src/modules/reports/*`
+  - Includes Sales, Inventory, Shipments, and a dedicated **Installment Dashboard**.
+  - Installment Dashboard features a card-based view with filters for Active, Overdue, and Paid accounts, plus a detailed drill-down for payment scheduling.
 - **User Management**: `src/modules/users/*`
 
 ## Front-end
